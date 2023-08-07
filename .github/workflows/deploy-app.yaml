@@ -12,6 +12,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
 
     steps:
       - uses: actions/checkout@v2
@@ -21,25 +24,20 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: Install dependencies using Yarn
-        run: yarn install
-
-      - name: Build using Yarn
-        run: yarn build
-
-      - name: Test (if test script is present)
-        run: yarn test || echo "No test script specified, skipping tests."
+      - name: Install dependencies, build, and test
+        run: |
+          cd app
+          yarn install
+          yarn build
+          yarn test --if-present
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
           name: next-app
           path: |
-            .next
-            public
-            node_modules # You might need node_modules as well, especially if you're using Next.js dependencies at runtime.
-            package.json
-            yarn.lock
+            app/.next
+            app/public
 
   deploy:
     runs-on: ubuntu-latest
@@ -61,4 +59,4 @@ jobs:
           app-name: 'app-private-chatgpt-aydgnqft'
           slot-name: 'production'
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc8992c3b5674f5381868b037ddf197c }}
-          package: .
+          package: app
