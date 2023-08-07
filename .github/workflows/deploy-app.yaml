@@ -26,7 +26,6 @@ jobs:
 
       - name: Install dependencies, build, and test
         run: |
-          cd app
           yarn install
           yarn build
           # yarn test --if-present
@@ -36,8 +35,8 @@ jobs:
         with:
           name: next-app
           path: |
-            app/.next
-            app/public
+            .next
+            public
 
   deploy:
     runs-on: ubuntu-latest
@@ -64,4 +63,4 @@ jobs:
           app-name: 'app-private-chatgpt-aydgnqft'
           slot-name: 'production'
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc8992c3b5674f5381868b037ddf197c }}
-          package: app
+          package: '.'
