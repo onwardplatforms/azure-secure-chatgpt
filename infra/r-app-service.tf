@@ -88,12 +88,12 @@ resource "azurerm_application_insights" "main" {
   tags = var.tags
 }
 
-# # Grant the App Service's managed identity the Key Vault Secrets User built-in role at the Key Vault's scope
-# resource "azurerm_role_assignment" "linux_web_app_key_vault_secrets_user" {
-#   scope                = azurerm_key_vault.main.id
-#   role_definition_name = data.azurerm_builtin_role_definition.key_vault_secrets_user.name
-#   principal_id         = azurerm_app_service.main.identity[0].principal_id
-# }
+# Grant the App Service's managed identity the Key Vault Secrets User built-in role at the Key Vault's scope
+resource "azurerm_role_assignment" "linux_web_app_key_vault_secrets_user" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = data.azurerm_role_definition.key_vault_secrets_user.name
+  principal_id         = azurerm_app_service.main.identity[0].principal_id
+}
 
 # Provide connectivity from the virtual network to the web app
 resource "azurerm_private_endpoint" "app" {
