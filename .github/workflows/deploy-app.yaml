@@ -3,70 +3,62 @@ name: Build Next.js and Deploy to Azure
 on:
   push:
     branches: [ main ]
+    # paths:
+    #   - 'app/**'
   pull_request:
     branches: [ main ]
   workflow_dispatch:
 
-env:
-  WEBAPP: app-private-chatgpt-aydgnqft
-  GROUP: rg-private-chatgpt-aydgnqft-application
-  ACCOUNT: stprivatechatgptaydgnqft
-  CONTAINER: app-builds
-  EXPIRY_TIME: 10 minutes
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        
-      - name: Setup Node
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js version
         uses: actions/setup-node@v1
         with:
           node-version: '18.x'
-          
-      - name: Install dependencies and Build with Next.js
-        run: |
-          yarn install
-          npx next build
-        
-      - name: Zip the entire app
-        uses: papeloto/action-zip@v1
-        with:
-          files: app/
-          dest: app.zip
 
-      - name: Upload artifact for deployment jobs
+      - name: Install dependencies using Yarn
+        run: yarn install
+
+      - name: Build using Yarn
+        run: yarn build
+
+      - name: Test (if test script is present)
+        run: yarn test || echo "No test script specified, skipping tests."
+
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
-          name: app
-          path: app.zip
+          name: next-app
+          path: |
+            .next
+            public
+            node_modules # You might need node_modules as well, especially if you're using Next.js dependencies at runtime.
+            package.json
+            yarn.lock
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
-      - name: Download artifact
+      - name: Download artifact from build job
         uses: actions/download-artifact@v2
         with:
-          name: app
+          name: next-app
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ env.WEBAPP }}
+          app-name: 'app-private-chatgpt-aydgnqft'
           slot-name: 'production'
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc8992c3b5674f5381868b037ddf197c }}
           package: .
