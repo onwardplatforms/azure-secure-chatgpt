@@ -1,0 +1,133 @@
+# Project variables
+
+variable "tenant_id" {
+  description = "The Azure Tenant ID"
+  type        = string
+}
+
+variable "subscription_id" {
+  description = "The Azure Subscription ID"
+  type        = string
+}
+
+variable "client_id" {
+  description = "The Azure Client ID"
+  type        = string
+}
+
+variable "client_secret" {
+  description = "The Azure Client Secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "name" {
+  type        = string
+  description = "The Name which should be used for this Resource Group. Changing this forces a new Resource Group to be created."
+  default     = "private-chatgpt"
+}
+
+variable "location" {
+  type        = string
+  description = "The Azure Region where the Resource Group should exist. Changing this forces a new Resource Group to be created."
+  default     = "eastus"
+}
+
+variable "tags" {
+  type        = map(string)
+  description = "A mapping of tags to assign to the resource."
+  default     = {}
+}
+
+variable "deploy_to_virtual_network" {
+  type        = bool
+  description = "Deploy the resources to a virtual network. Defaults to true."
+  default     = true
+}
+
+# Cosmos Database Variables
+
+variable "cosmos_db_capabilities" {
+  type        = list(string)
+  description = "A list of CosmosDB capabilities to enable."
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for capability in var.cosmos_db_capabilities :
+      contains([
+        "AllowSelfServeUpgradeToMongo36",
+        "DisableRateLimitingResponses",
+        "EnableAggregationPipeline",
+        "EnableCassandra",
+        "EnableGremlin",
+        "EnableMongo",
+        "EnableMongo16MBDocumentSupport",
+        "EnableMongoRetryableWrites",
+        "EnableMongoRoleBasedAccessControl",
+        "EnablePartialUniqueIndex",
+        "EnableServerless",
+        "EnableTable",
+        "EnableTtlOnCustomPath",
+        "EnableUniqueCompoundNestedDocs",
+        "MongoDBv3.4",
+      "mongoEnableDocLevelTTL"], capability)
+    ])
+
+    error_message = "The cosmos_db_capabilities can only include the following values: AllowSelfServeUpgradeToMongo36, DisableRateLimitingResponses, EnableAggregationPipeline, EnableCassandra, EnableGremlin, EnableMongo, EnableMongo16MBDocumentSupport, EnableMongoRetryableWrites, EnableMongoRoleBasedAccessControl, EnablePartialUniqueIndex, EnableServerless, EnableTable, EnableTtlOnCustomPath, EnableUniqueCompoundNestedDocs, MongoDBv3.4 and mongoEnableDocLevelTTL."
+  }
+}
+
+variable "cosmos_db_serverless_enabled" {
+  type        = bool
+  description = "Enable Serverless CosmosDB. Changing this forces a new CosmosDB to be created. Defaults to false."
+  default     = false
+}
+
+variable "cosmos_db_geo_locations" {
+  description = "List of Azure regions for Cosmos DB geo-replication. When cosmos_db_serverless_enabled is set to false, the location for this project is used."
+  type        = list(string)
+  default     = ["eastus", "westus"]
+}
+
+# Cognitive Account variables
+
+variable "cognitive_account_sku" {
+  description = "Specifies the SKU Name for this Cognitive Service Account"
+  type        = string
+  default     = "S0"
+
+  validation {
+    condition     = contains(["F0", "F1", "S0", "S", "S1", "S2", "S3", "S4", "S5", "S6", "P0", "P1", "P2", "E0", "DC0"], var.cognitive_account_sku)
+    error_message = "The cognitive_account_sku must be one of the following: F0, F1, S0, S, S1, S2, S3, S4, S5, S6, P0, P1, P2, E0, DC0."
+  }
+}
+
+# App service variables
+
+variable "app_service_isolation_enabled" {
+  description = "Enable an isolated environment for the app service using ASE."
+  type        = bool
+  default     = false
+}
+
+variable "app_service_plan_sku" {
+  description = "The SKU of the App Service Plan"
+  type        = string
+  default     = "P1v3"
+  validation {
+    condition = contains([
+      "B1", "B2", "B3",
+      "S1", "S2", "S3",
+      "P1v2", "P2v2", "P3v2", "P1v3", "P2v3", "P3v3",
+      "I1", "I2", "I3", "I1v2", "I2v2", "I3v2", "I4v2", "I5v2", "I6v2"
+    ], var.app_service_plan_sku)
+    error_message = "Invalid SKU. The SKU must be one of the valid Azure App Service Plan SKUs."
+  }
+}
+
+variable "app_settings" {
+  type        = map(string)
+  description = "A mapping of app settings to assign to the app service."
+  default     = {}
+}
