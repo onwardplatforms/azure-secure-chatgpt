@@ -69,27 +69,27 @@ jobs:
       - name: Set blob name
         run: echo "BLOB_NAME=app-${{ github.sha }}.zip" >> $GITHUB_ENV
 
-      - name: Azure CLI script
-        uses: azure/CLI@v1
-        with:
-          azcliversion: 2.30.0
-          inlineScript: |
-            az extension add --name webapp
-            # Generate a SAS token for blob upload with write permissions
-            SAS_TOKEN=$(az storage blob generate-sas --account-name $ACCOUNT --container-name $CONTAINER --name $BLOB_NAME --permissions w --expiry ${{ env.expiry }} --https-only)
-
-            # Upload the blob using the generated SAS token
-            az storage blob upload --auth-mode login -f app.zip --account-name $ACCOUNT -c $CONTAINER -n $BLOB_NAME --metadata build_number=${{ github.run_number }} run_number=${{ github.run_id }} commit_message="${{ github.event.head_commit.message }}" commit_author="${{ github.actor }}" event_type="${{ github.event_name }}"
-            ZIP_URL=$(az storage blob url --auth-mode login --account-name $ACCOUNT -c $CONTAINER -n $BLOB_NAME)
-            az webapp deploy --name $WEBAPP --resource-group $GROUP --type zip --src-url $ZIP_URL --async false
-
-
       # - name: Azure CLI script
       #   uses: azure/CLI@v1
       #   with:
       #     azcliversion: 2.30.0
       #     inlineScript: |
       #       az extension add --name webapp
+      #       # Generate a SAS token for blob upload with write permissions
+      #       SAS_TOKEN=$(az storage blob generate-sas --account-name $ACCOUNT --container-name $CONTAINER --name $BLOB_NAME --permissions w --expiry ${{ env.expiry }} --https-only)
+
+      #       # Upload the blob using the generated SAS token
       #       az storage blob upload --auth-mode login -f app.zip --account-name $ACCOUNT -c $CONTAINER -n $BLOB_NAME --metadata build_number=${{ github.run_number }} run_number=${{ github.run_id }} commit_message="${{ github.event.head_commit.message }}" commit_author="${{ github.actor }}" event_type="${{ github.event_name }}"
-      #       ZIP_URL=$(az storage blob generate-sas --full-uri --permissions r --expiry ${{ env.expiry }} --account-name $ACCOUNT -c $CONTAINER -n $BLOB_NAME | xargs)
+      #       ZIP_URL=$(az storage blob url --auth-mode login --account-name $ACCOUNT -c $CONTAINER -n $BLOB_NAME)
       #       az webapp deploy --name $WEBAPP --resource-group $GROUP --type zip --src-url $ZIP_URL --async false
+
+
+      - name: Azure CLI script
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.30.0
+          inlineScript: |
+            az extension add --name webapp
+            az storage blob upload --auth-mode login -f app.zip --account-name $ACCOUNT -c $CONTAINER -n $BLOB_NAME --metadata build_number=${{ github.run_number }} run_number=${{ github.run_id }} commit_message="${{ github.event.head_commit.message }}" commit_author="${{ github.actor }}" event_type="${{ github.event_name }}"
+            ZIP_URL=$(az storage blob generate-sas --full-uri --permissions r --expiry ${{ env.expiry }} --account-name $ACCOUNT -c $CONTAINER -n $BLOB_NAME | xargs)
+            az webapp deploy --name $WEBAPP --resource-group $GROUP --type zip --src-url $ZIP_URL --async false
