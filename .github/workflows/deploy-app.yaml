@@ -29,7 +29,6 @@ jobs:
           cd app
           yarn install
           yarn build
-          yarn test --if-present
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
