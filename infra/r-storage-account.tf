@@ -17,7 +17,7 @@ resource "azurerm_storage_container" "main" {
 
 # Provides the principal deploying the configuration permissions to
 # read from and write to the storage container to deploy the build artifact
-resource "azurerm_role_assignement" "storage_blob_data_contributor" {
+resource "azurerm_role_assignment" "storage_blob_data_contributor" {
   scope                = azurerm_storage_account.main.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = data.azurerm_client_config.current.object_id

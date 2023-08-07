@@ -92,7 +92,7 @@ resource "azurerm_application_insights" "main" {
 resource "azurerm_role_assignment" "linux_web_app_key_vault_secrets_user" {
   scope                = azurerm_key_vault.main.id
   role_definition_name = data.azurerm_role_definition.key_vault_secrets_user.name
-  principal_id         = azurerm_app_service.main.identity[0].principal_id
+  principal_id         = azurerm_linux_web_app.main.identity[0].principal_id
 }
 
 # Provide connectivity from the virtual network to the web app
