@@ -30,6 +30,13 @@ jobs:
           yarn build
           # yarn test --if-present
 
+      - name: List directory contents
+        run: |
+          echo "Contents of .next directory:"
+          ls -al .next
+          echo "Contents of public directory:"
+          ls -al public
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
