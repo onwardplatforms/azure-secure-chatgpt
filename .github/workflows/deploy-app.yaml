@@ -116,7 +116,7 @@ jobs:
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
-          name: Nextjs-site
+          name: next-app
           path: app/site-deploy/Nextjs-site.zip
 
   deploy:
@@ -129,7 +129,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
-          name: Nextjs-site
+          name: next-app
 
       - name: Azure Login
         uses: azure/login@v1
@@ -141,10 +141,10 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'app-private-chatgpt-aydgnqft'
-          slot-name: 'production'
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc8992c3b5674f5381868b037ddf197c }}
-          package: './Nextjs-site.zip'
-          startup-command: 'next start -p 8080'
+          # slot-name: 'production'
+          # publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc8992c3b5674f5381868b037ddf197c }}
+          package: './next-app.zip'
+          # startup-command: 'next start -p 8080'
 
       - name: Cleanup
-        run: rm Nextjs-site.zip
+        run: rm next-app.zip
