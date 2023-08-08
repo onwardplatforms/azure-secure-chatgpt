@@ -144,7 +144,7 @@ jobs:
           slot-name: 'production'
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc8992c3b5674f5381868b037ddf197c }}
           package: './Nextjs-site.zip'
-          startup-command: 'next start -p 3000'
+          startup-command: 'next start -p $PORT'
 
       - name: Cleanup
         run: rm Nextjs-site.zip
