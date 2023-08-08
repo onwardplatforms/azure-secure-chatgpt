@@ -145,7 +145,7 @@ jobs:
           slot-name: 'production'
           # publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc8992c3b5674f5381868b037ddf197c }}
           package: './next-app.zip'
-          startup-command: 'next start'
+          startup-command: 'npx next start'
 
       - name: Cleanup
         run: rm next-app.zip
