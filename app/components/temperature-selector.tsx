@@ -33,9 +33,9 @@ export function TemperatureSelector({
             </div>
             <Slider
               id="temperature"
-              max={1}
+              max={2}
               defaultValue={value}
-              step={0.1}
+              step={0.01}
               onValueChange={setValue}
               className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
               aria-label="Temperature"

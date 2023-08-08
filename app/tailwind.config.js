@@ -12,11 +12,13 @@ module.exports = {
         '2xl': '1400px',
       },
     },
+
     extend: {
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        accent: 'hsl(var(--accent-foreground))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         primary: {
