@@ -141,10 +141,10 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'app-private-chatgpt-aydgnqft'
-          # slot-name: 'production'
+          slot-name: 'production'
           # publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc8992c3b5674f5381868b037ddf197c }}
           package: './next-app.zip'
-          # startup-command: 'next start -p 8080'
+          startup-command: 'next start'
 
       - name: Cleanup
         run: rm next-app.zip
