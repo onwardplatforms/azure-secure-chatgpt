@@ -111,13 +111,13 @@ jobs:
       - name: Package Next application for deployment
         run: |
           cd site-deploy
-          zip -qr Nextjs-site.zip ./*
+          zip -qr next-app.zip ./*
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
           name: next-app
-          path: app/site-deploy/Nextjs-site.zip
+          path: app/site-deploy/next-app.zip
 
   deploy:
     runs-on: ubuntu-latest
