@@ -19,7 +19,7 @@ export function Header() {
               href={siteConfig.github}
               target="_blank"
             >
-              <Button className="" variant={'outline'}>
+              <Button className="" variant={'ghost'}>
                 <Icons.GitHub className="h-6 w-6 fill-current" />
                 <span className="px-4 font-bold text-lg">GitHub</span>
               </Button>
@@ -28,7 +28,7 @@ export function Header() {
               className="flex my-2 w-full justify-start items-center"
               href={siteConfig.twitter}
             >
-              <Button variant={'outline'}>
+              <Button variant={'ghost'}>
                 <Icons.Twitter className="h-6 w-6 fill-current" />
                 <span className="px-4 font-bold text-lg">Twitter</span>
               </Button>
@@ -37,7 +37,7 @@ export function Header() {
               className="flex w-full my-2 justify-start items-center"
               href={siteConfig.linkedin}
             >
-              <Button variant={'outline'}>
+              <Button variant={'ghost'}>
                 <Icons.Linkedin className="h-6 w-6 fill-current" />
                 <span className="px-4 font-bold text-lg">LinkedIn</span>
               </Button>
@@ -55,14 +55,14 @@ export function Header() {
         </span>
       </div>
       <div className="flex ml-auto md:hidden">
-        <Button onClick={() => setOpen((prev) => !prev)} variant={'outline'}>
+        <Button onClick={() => setOpen((prev) => !prev)} variant={'ghost'}>
           <Icons.Menu className="h-5 w-5 fill-current" />
         </Button>
       </div>
 
       <div className="ml-auto hidden md:flex gap-4">
         <a href={siteConfig.github} target="_blank">
-          <Button variant={'outline'} size={'icon'}>
+          <Button variant={'ghost'} size={'icon'}>
             <Icons.GitHub className="h-5 w-5 fill-current" />
           </Button>
         </a>
@@ -71,7 +71,7 @@ export function Header() {
           target="_blank"
           referrerPolicy="no-referrer"
         >
-          <Button variant={'outline'} size={'icon'}>
+          <Button variant={'ghost'} size={'icon'}>
             <Icons.Linkedin className="h-5 w-5 fill-current" />
           </Button>
         </a>
@@ -80,7 +80,7 @@ export function Header() {
           target="_blank"
           referrerPolicy="no-referrer"
         >
-          <Button variant={'outline'} size={'icon'}>
+          <Button variant={'ghost'} size={'icon'}>
             <Icons.Twitter className="h-5 w-5 fill-current" />
           </Button>
         </a>
