@@ -107,6 +107,7 @@ jobs:
           mkdir site-deploy
           cp -R .next site-deploy/
           cp -R public site-deploy/
+          cp -R node_modules site-deploy/
 
       - name: Package Next application for deployment
         run: |
