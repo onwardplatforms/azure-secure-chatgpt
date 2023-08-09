@@ -104,13 +104,12 @@ jobs:
 
       - name: Prepare deployment directory
         run: |
+          ls
           mkdir site-deploy
           cp -R .next site-deploy/
           cp -R public site-deploy/
           cp -R node_modules site-deploy/
           cp package.json site-deploy/
-          cp package-lock.json site-deploy/  # If you have this file
-          cp yarn.lock site-deploy/          # If you have this file
 
       - name: Package Next application for deployment
         run: |
