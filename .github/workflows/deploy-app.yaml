@@ -1,5 +1,20 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
+# Build and Deploy Next.js App to Azure Web Apps
+
+# This workflow automates the process of building, packaging, and deploying a Next.js application to Azure Web Apps.
+# It is triggered on pushes, pull requests to the main branch, and manual workflow dispatches.
+
+# Workflow Overview:
+# 1. Checkout: Retrieves the source code from the repository.
+# 2. Setup Node.js: Configures the desired Node.js version.
+# 3. Cache Node Modules: Caches node_modules to improve build times in subsequent runs.
+# 4. Install, Build, Test: Installs project dependencies, builds the Next.js application, and runs tests.
+# 5. Prepare Deployment Files: Organizes and copies necessary files for deployment.
+# 6. Package for Deployment: Zips the prepared files into a single archive for deployment.
+# 7. Diagnostics: Lists the directories and files for debugging purposes.
+# 8. Upload Artifact: Saves the packaged app as a GitHub Actions artifact.
+# 9. Download Artifact: Retrieves the saved artifact in the deployment job.
+# 10. Authenticate with Azure: Logs in to Azure using provided credentials.
+# 11. Deploy to Azure: Deploys the Next.js application to Azure Web Apps.
 
 name: Build and deploy Next.js app to Azure
 
@@ -15,14 +30,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
           node-version: '18.x'
 
-      - name: npm install, build, and test
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: ./src/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('./src/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies, build and test
         run: |
           cd ./src
           npm install
@@ -30,30 +54,26 @@ jobs:
           npm run test --if-present
           cd ..
 
-      - name: Copy standalone into the root
-        run: cp -R ./src/.next/standalone ./site-deploy
+      - name: Prepare deployment files
+        run: |
+          mkdir -p ./site-deploy/.next/static
+          cp -R ./src/.next/standalone ./site-deploy
+          cp -R ./src/.next/static ./site-deploy/.next/static
+          cp -R ./src/public ./site-deploy/public
+          cp -R ./src/node_modules ./site-deploy/node_modules
 
-      - name: Copy static into the .next folder
-        run: cp -R ./src/.next/static ./site-deploy/.next/static
-
-      - name: Copy Public folder
-        run: cp -R ./src/public ./site-deploy/public
-
-      - name: Copy Node modules
-        run: cp -R ./src/node_modules ./site-deploy/node_modules
-
-      - name: Package Next application
+      - name: Package Next application for deployment
         run: |
           cd ./site-deploy
           zip app-code.zip ./* .next -qr      
-          
-      - name: Diagnostics
+
+      - name: List directories for diagnostics
         run: |
           ls ./src
           ls ./src/.next
           ls ./site-deploy
 
-      - name: Publish Next Application artifact
+      - name: Upload packaged app as artifact
         uses: actions/upload-artifact@v3
         with:
           name: app-code
@@ -67,20 +87,19 @@ jobs:
       name: 'Production'
 
     steps:
-      - name: Download artifact from build job
+      - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
           name: app-code
 
-      - name: Azure Login
+      - name: Authenticate with Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
+      - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'app-private-chatgpt-aydgnqft'
+          app-name: ${{ secrets.AZURE_APP_NAME }}
           slot-name: 'Production'
           package: ${{ github.workspace }}/app-code.zip
