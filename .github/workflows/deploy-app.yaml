@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build Next.js and Deploy to Azure
+name: Build and deploy Next.js app to Azure
 
 on:
   push:
@@ -21,9 +21,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: '18.x'
-
-      - name: Install SWC dependencies
-        run: npm install @next/swc-linux-x64-gnu
 
       - name: npm install, build, and test
         run: |
