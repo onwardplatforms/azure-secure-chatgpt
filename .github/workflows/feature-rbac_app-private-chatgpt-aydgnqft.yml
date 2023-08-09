@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: '18.x'
 
+      - name: Install SWC dependencies
+        run: npm install @next/swc-linux-x64-gnu @next/swc-linux-x64-gnux32
+
       - name: npm install, build, and test
         run: |
           cd ./src
