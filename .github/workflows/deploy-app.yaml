@@ -1,78 +1,3 @@
-# name: Build Next.js and Deploy to Azure
-
-# on:
-#   push:
-#     branches: [ main ]
-#     # paths:
-#     #   - 'app/**'
-#   pull_request:
-#     branches: [ main ]
-#   workflow_dispatch:
-
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     defaults:
-#       run:
-#         working-directory: app
-
-#     steps:
-#       - uses: actions/checkout@v3
-
-#       - name: Set up Node.js version
-#         uses: actions/setup-node@v3
-#         with:
-#           node-version: '18.x'
-
-#       - name: Install dependencies, build, and test
-#         run: |
-#           yarn install
-#           yarn build
-#           # yarn test --if-present
-
-#       - name: List directory contents
-#         run: |
-#           echo "Contents of .next directory:"
-#           ls -al .next
-#           echo "Contents of public directory:"
-#           ls -al public
-
-#       - name: Upload artifact for deployment job
-#         uses: actions/upload-artifact@v3
-#         with:
-#           name: next-app
-#           path: |
-#             ${{ github.workspace }}/app/.next
-#             ${{ github.workspace }}/app/public
-
-#   deploy:
-#     runs-on: ubuntu-latest
-#     needs: build
-#     environment:
-#       name: 'production'
-#       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-#     steps:
-#       - name: Download artifact from build job
-#         uses: actions/download-artifact@v3
-#         with:
-#           name: next-app
-
-#       - name: Azure Login
-#         uses: azure/login@v1
-#         with:
-#           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-#       - name: 'Deploy to Azure Web App'
-#         id: deploy-to-webapp
-#         uses: azure/webapps-deploy@v2
-#         with:
-#           app-name: 'app-private-chatgpt-aydgnqft'
-#           slot-name: 'production'
-#           publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc8992c3b5674f5381868b037ddf197c }}
-#           package: '.'
-#           startup-command: 'pm2 start /home/site/wwwroot/ecosystem.config.js --no-daemon'
-
 name: Build Next.js and Deploy to Azure
 
 on:
@@ -97,18 +22,16 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: Install dependencies, build, and test
+      - name: Install dependencies and build
         run: |
           yarn install
           yarn build
 
       - name: Prepare deployment directory
         run: |
-          ls
           mkdir site-deploy
           cp -R .next site-deploy/
           cp -R public site-deploy/
-          cp -R node_modules site-deploy/
           cp package.json site-deploy/
           cp yarn.lock site-deploy/
 
@@ -146,9 +69,8 @@ jobs:
         with:
           app-name: 'app-private-chatgpt-aydgnqft'
           slot-name: 'production'
-          # publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc8992c3b5674f5381868b037ddf197c }}
           package: './next-app.zip'
-          startup-command: 'yarn start'
+          startup-command: 'yarn install && yarn start'
 
       - name: Cleanup
         run: rm next-app.zip
