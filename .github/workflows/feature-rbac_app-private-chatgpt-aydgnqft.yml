@@ -41,9 +41,6 @@ jobs:
       - name: Copy Public folder
         run: cp -R ./src/public ./site-deploy/public
 
-      - name: Copy Public folder
-        run: cp -R ./src/public ./site-deploy/public
-
       - name: Copy Node modules
         run: cp -R ./src/node_modules ./site-deploy/node_modules
 
