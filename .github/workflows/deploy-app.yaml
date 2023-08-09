@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '18.x'
 
@@ -45,6 +45,9 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('./src/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+
+      - name: Install SWC dependencies
+        run: npm install @next/swc-linux-x64-gnu
 
       - name: Install dependencies, build and test
         run: |
