@@ -110,6 +110,7 @@ jobs:
           cp -R public site-deploy/
           cp -R node_modules site-deploy/
           cp package.json site-deploy/
+          cp yarn.lock site-deploy/
 
       - name: Package Next application for deployment
         run: |
