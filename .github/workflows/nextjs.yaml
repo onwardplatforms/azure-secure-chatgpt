@@ -7,8 +7,12 @@ concurrency:
 on:
   push:
     branches: [ main ]
+    paths:
+    - 'app/**'
   pull_request:
     branches: [ main ]
+    paths:
+    - 'app/**'
   workflow_dispatch:
 
 jobs:
