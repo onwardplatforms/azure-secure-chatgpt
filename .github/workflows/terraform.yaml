@@ -145,9 +145,19 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
 
+    # Extract the individual credentials from AZURE_CREDENTIALS
+    - name: Extract Azure Credentials
+      run: |
+        echo "ARM_CLIENT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientId')" >> $GITHUB_ENV
+        echo "ARM_CLIENT_SECRET=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientSecret')" >> $GITHUB_ENV
+        echo "ARM_SUBSCRIPTION_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.subscriptionId')" >> $GITHUB_ENV
+        echo "ARM_TENANT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.tenantId')" >> $GITHUB_ENV
+        echo "ARM_USE_MSI=true" >> $GITHUB_ENV
+
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
-      run: terraform init
+      run: |
+        terraform init -backend-config="container_name=${{ secrets.TFSTATE_CONTAINER_NAME }}" -backend-config="key=${{ secrets.TFSTATE_NAME }}" -backend-config="resource_group_name=${{ secrets.TERRAFORM_RESOURCE_GROUP }}" -backend-config="storage_account_name=${{ secrets.TERRAFORM_STORAGE_ACCOUNT }}"
 
     # Download saved plan from artifacts  
     - name: Download Terraform Plan
