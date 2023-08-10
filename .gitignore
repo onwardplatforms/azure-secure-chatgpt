@@ -34,7 +34,8 @@ override.tf.json
 terraform.rc
 
 # Ignore local files
-local.*
+*tfbackend
+local.auth
 
 
 # Next app

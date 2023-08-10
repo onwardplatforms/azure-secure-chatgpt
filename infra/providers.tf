@@ -1,6 +1,5 @@
 provider "azurerm" {
   storage_use_azuread = true
-  use_msi             = true
 
   features {
     resource_group {
