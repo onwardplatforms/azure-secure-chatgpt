@@ -54,6 +54,42 @@ resource "azurerm_cosmosdb_account" "main" {
   tags = var.tags
 }
 
+resource "azurerm_cosmosdb_sql_database" "main" {
+  name                = "cosmos-sql-db"
+  resource_group_name = azurerm_cosmosdb_account.main.resource_group_name
+  account_name        = azurerm_cosmosdb_account.main.name
+}
+
+resource "azurerm_cosmosdb_sql_container" "example" {
+  name                  = "app-container"
+  resource_group_name   = azurerm_cosmosdb_account.main.resource_group_name
+  account_name          = azurerm_cosmosdb_account.main.name
+  database_name         = azurerm_cosmosdb_sql_database.main.name
+  partition_key_path    = "/id"
+  partition_key_version = 2
+  throughput            = 400
+
+  indexing_policy {
+    indexing_mode = "consistent"
+
+    included_path {
+      path = "/*"
+    }
+
+    included_path {
+      path = "/included/?"
+    }
+
+    excluded_path {
+      path = "/excluded/?"
+    }
+  }
+
+  unique_key {
+    paths = ["/definition/idlong", "/definition/idshort"]
+  }
+}
+
 # Provide connectivity from the virtual network to the cosmos database account
 resource "azurerm_private_endpoint" "cosmos_db" {
   count = var.deploy_to_virtual_network ? 1 : 0
