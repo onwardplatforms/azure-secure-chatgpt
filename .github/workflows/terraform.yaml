@@ -1,0 +1,87 @@
+name: Terraform Deployment
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  terraform_plan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform Init
+      run: |
+        terraform init -backend-config="container_name=${{ secrets.TFSTATE_CONTAINER_NAME }}" \
+                       -backend-config="key=${{ secrets.TFSTATE_NAME }}" \
+                       -backend-config="resource_group_name=${{ secrets.TERRAFORM_RESOURCE_GROUP }}" \
+                       -backend-config="storage_account_name=${{ secrets.TFSTATE_STORAGE_ACCOUNT }}"
+
+    - name: Terraform Plan
+      run: |
+        terraform plan -out=tfplan
+      id: plan
+
+    - name: Post plan results to PR
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const output = `#### Terraform Plan:\n\`\`\`${{steps.plan.outputs.stdout}}\`\`\``;
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          });
+
+    - name: Upload tfplan to storage account
+      uses: Azure/blob-storage-upload-action@v1
+      with:
+        source-dir: .
+        source: tfplan
+        container-url: ${{ secrets.TFPLAN_CONTAINER }}
+        blob-name: ${{ github.sha }}-tfplan
+        credentials: ${{ secrets.AZURE_CREDENTIALS }}
+
+  terraform_apply:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: terraform_plan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform Init
+      run: |
+        terraform init -backend-config="container_name=${{ secrets.TFSTATE_CONTAINER_NAME }}" \
+                       -backend-config="key=${{ secrets.TFSTATE_NAME }}" \
+                       -backend-config="resource_group_name=${{ secrets.TERRAFORM_RESOURCE_GROUP }}" \
+                       -backend-config="storage_account_name=${{ secrets.TFSTATE_STORAGE_ACCOUNT }}"
+
+    - name: Download tfplan from storage account
+      uses: Azure/blob-storage-download-action@v1
+      with:
+        container-url: ${{ secrets.TFPLAN_CONTAINER }}
+        blob-name: ${{ github.sha }}-tfplan
+        destination: tfplan
+        credentials: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Terraform Apply
+      run: |
+        terraform apply "tfplan"
