@@ -1,21 +1,3 @@
-# Build and Deploy Next.js App to Azure Web Apps
-
-# This workflow automates the process of building, packaging, and deploying a Next.js application to Azure Web Apps.
-# It is triggered on pushes, pull requests to the main branch, and manual workflow dispatches.
-
-# Workflow Overview:
-# 1. Checkout: Retrieves the source code from the repository.
-# 2. Setup Node.js: Configures the desired Node.js version.
-# 3. Cache Node Modules: Caches node_modules to improve build times in subsequent runs.
-# 4. Install, Build, Test: Installs project dependencies, builds the Next.js application, and runs tests.
-# 5. Prepare Deployment Files: Organizes and copies necessary files for deployment.
-# 6. Package for Deployment: Zips the prepared files into a single archive for deployment.
-# 7. Diagnostics: Lists the directories and files for debugging purposes.
-# 8. Upload Artifact: Saves the packaged app as a GitHub Actions artifact.
-# 9. Download Artifact: Retrieves the saved artifact in the deployment job.
-# 10. Authenticate with Azure: Logs in to Azure using provided credentials.
-# 11. Deploy to Azure: Deploys the Next.js application to Azure Web Apps.
-
 name: Deploy Next.js App to Azure
 
 concurrency:
