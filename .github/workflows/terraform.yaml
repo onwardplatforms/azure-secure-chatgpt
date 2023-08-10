@@ -89,7 +89,7 @@ jobs:
     - name: Create String Output
       id: tf-plan-string
       run: |
-        TERRAFORM_PLAN=$(terraform show -no-color tfplan)
+        TERRAFORM_PLAN=$(terraform show -no-color tfplan-${{ github.sha }})
         
         delimiter="$(openssl rand -hex 8)"
         echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
@@ -168,4 +168,4 @@ jobs:
 
     # Terraform Apply
     - name: Terraform Apply
-      run: terraform apply -auto-approve tfplan
+      run: terraform apply -auto-approve tfplan-${{ github.sha }}
