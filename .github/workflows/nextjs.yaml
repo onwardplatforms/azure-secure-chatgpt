@@ -16,7 +16,7 @@
 # 10. Authenticate with Azure: Logs in to Azure using provided credentials.
 # 11. Deploy to Azure: Deploys the Next.js application to Azure Web Apps.
 
-name: Nextjs Deployment to Azure
+name: Deploy Next.js App to Azure
 
 on:
   push:

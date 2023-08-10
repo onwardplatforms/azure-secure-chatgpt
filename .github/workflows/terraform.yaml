@@ -1,4 +1,4 @@
-name: 'Terraform Plan/Apply'
+name: 'Deploy Terraform to Azure'
 
 on:
   push:
@@ -51,7 +51,10 @@ jobs:
     
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
-      run: terraform init
+      run: terraform init -backend-config="container_name=${{ secrets.TFSTATE_CONTAINER_NAME }}" \
+                          -backend-config="key=${{ secrets.TFSTATE_NAME }}" \
+                          -backend-config="resource_group_name=${{ secrets.TERRAFORM_RESOURCE_GROUP }}" \
+                          -backend-config="storage_account_name=${{ secrets.TFSTATE_STORAGE_ACCOUNT }}"
 
     # Checks that all Terraform configuration files adhere to a canonical format
     # Will fail the build if not
