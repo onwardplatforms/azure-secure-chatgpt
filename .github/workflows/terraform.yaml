@@ -88,7 +88,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: tfplan-${{ github.sha }}
-        # path: plans
+        path: tfplan-${{ github.sha }}
         
     # Create string output of Terraform Plan
     - name: Create String Output
