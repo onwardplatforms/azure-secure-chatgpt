@@ -42,17 +42,13 @@ jobs:
       with:
         terraform_wrapper: false
 
-    # # Extract the individual credentials from AZURE_CREDENTIALS
-    # - name: Extract Azure Credentials
-    #   run: |
-    #     echo "ARM_CLIENT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientId')" >> $GITHUB_ENV
-    #     echo "ARM_SUBSCRIPTION_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.subscriptionId')" >> $GITHUB_ENV
-    #     echo "ARM_TENANT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.tenantId')" >> $GITHUB_ENV
-
-    - name: Authenticate with Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    # Extract the individual credentials from AZURE_CREDENTIALS
+    - name: Extract Azure Credentials
+      run: |
+        echo "TF_ENV_client_id=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientId')" >> $GITHUB_ENV
+        echo "TF_ENV_client_secretT=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientId')" >> $GITHUB_ENV
+        echo "TF_ENV_subscription_id=$(echo "$AZURE_CREDENTIALS" | jq -r '.subscriptionId')" >> $GITHUB_ENV
+        echo "TF_ENV_tenant_id=$(echo "$AZURE_CREDENTIALS" | jq -r '.tenantId')" >> $GITHUB_ENV
     
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
