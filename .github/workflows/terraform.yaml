@@ -46,13 +46,13 @@ jobs:
     - name: Extract Azure Credentials
       run: |
         echo "ARM_CLIENT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientId')" >> $GITHUB_ENV
+        echo "ARM_CLIENT_SECRET=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientSecret')" >> $GITHUB_ENV
         echo "ARM_SUBSCRIPTION_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.subscriptionId')" >> $GITHUB_ENV
         echo "ARM_TENANT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.tenantId')" >> $GITHUB_ENV
     
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
       run: |
-        echo $ARM_SUBSCRIPTION_ID
         terraform init -backend-config="container_name=${{ secrets.TFSTATE_CONTAINER_NAME }}" -backend-config="key=${{ secrets.TFSTATE_NAME }}" -backend-config="resource_group_name=${{ secrets.TERRAFORM_RESOURCE_GROUP }}" -backend-config="storage_account_name=${{ secrets.TERRAFORM_STORAGE_ACCOUNT }}"
 
     # Checks that all Terraform configuration files adhere to a canonical format
