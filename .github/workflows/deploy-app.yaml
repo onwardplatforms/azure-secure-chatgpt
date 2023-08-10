@@ -103,6 +103,6 @@ jobs:
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ secrets.AZURE_APP_NAME }}
+          app-name: ${{ secrets.AZURE_WEB_APP_NAME }}
           slot-name: 'Production'
           package: ${{ github.workspace }}/app-code.zip
