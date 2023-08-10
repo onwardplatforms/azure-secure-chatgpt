@@ -1,4 +1,4 @@
-name: Terraform Deployment
+name: Terraform Deployment to Azure
 
 on:
   pull_request:
@@ -21,20 +21,16 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Authenticate with Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
 
-    - name: Set Azure Credentials from Secrets
+    - name: Set Azure Credentials for Terraform
       run: |
-        echo "ARM_CLIENT_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.clientId')" >> $GITHUB_ENV
-        echo "ARM_CLIENT_SECRET=$(echo '$AZURE_CREDENTIALS' | jq -r '.clientSecret')" >> $GITHUB_ENV
-        echo "ARM_SUBSCRIPTION_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.subscriptionId')" >> $GITHUB_ENV
-        echo "ARM_TENANT_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.tenantId')" >> $GITHUB_ENV
+        creds=${{ toJson(secrets.AZURE_CREDENTIALS) }}
+        echo "TF_VAR_client_id=${creds.clientId}" >> $GITHUB_ENV
+        echo "TF_VAR_client_secret=${creds.clientSecret}" >> $GITHUB_ENV
+        echo "TF_VAR_subscription_id=${creds.subscriptionId}" >> $GITHUB_ENV
+        echo "TF_VAR_tenant_id=${creds.tenantId}" >> $GITHUB_ENV
       env:
         AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
@@ -81,21 +77,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Authenticate with Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
 
-    - name: Set Azure Credentials from Secrets
+    - name: Set Azure Credentials for Terraform
       run: |
-        echo "ARM_CLIENT_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.clientId')" >> $GITHUB_ENV
-        echo "ARM_CLIENT_SECRET=$(echo '$AZURE_CREDENTIALS' | jq -r '.clientSecret')" >> $GITHUB_ENV
-        echo "ARM_SUBSCRIPTION_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.subscriptionId')" >> $GITHUB_ENV
-        echo "ARM_TENANT_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.tenantId')" >> $GITHUB_ENV
-      env:
+        creds=${{ toJson(secrets.AZURE_CREDENTIALS) }}
+        echo "TF_VAR_client_id=${creds.clientId}" >> $GITHUB_ENV
+        echo "TF_VAR_client_secret=${creds.clientSecret}" >> $GITHUB_ENV
+        echo "TF_VAR_subscription_id=${creds.subscriptionId}" >> $GITHUB_ENV
+        echo "TF_VAR_tenant_id=${creds.tenantId}" >> $GITHUB_ENV
+          env:
         AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Terraform Init
