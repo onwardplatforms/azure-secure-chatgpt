@@ -18,6 +18,10 @@
 
 name: Deploy Next.js App to Azure
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 on:
   push:
     branches: [ main ]
