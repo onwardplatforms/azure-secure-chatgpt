@@ -9,10 +9,12 @@ on:
     branches: [ main ]
     paths:
     - 'app/**'
+    - .github/workflows/nextjs.yaml
   pull_request:
     branches: [ main ]
     paths:
     - 'app/**'
+    - .github/workflows/nextjs.yaml
   workflow_dispatch:
 
 jobs:
