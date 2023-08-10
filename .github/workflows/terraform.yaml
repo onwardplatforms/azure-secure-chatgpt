@@ -168,8 +168,8 @@ jobs:
     - name: Download Terraform Plan
       uses: actions/download-artifact@v3
       with:
-        name: tfplan-${{ github.sha }}
-        # path: plans
+        name: tfplan
+        path: tfplan-${{ github.sha }}
 
     # Terraform Apply
     - name: Terraform Apply
