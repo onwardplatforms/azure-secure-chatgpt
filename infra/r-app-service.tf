@@ -1,16 +1,16 @@
 locals {
   app_settings_defaults = {
     # This URI will be used to connect the application to key vault to get openai api keys
-    "KEY_VAULT_URI" = azurerm_key_vault.main.vault_uri
+    "KEY_VAULT_URI"                  = azurerm_key_vault.main.vault_uri
     "AZURE_OPENAI_API_INSTANCE_NAME" = local.project_name
-    "COSMOS_ENDPOINT" = azurerm_cosmosdb_account.main.endpoint
+    "COSMOS_ENDPOINT"                = azurerm_cosmosdb_account.main.endpoint
     # These settings are required to automatically connect app insights to the web app
-    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main.instrumentation_key
-    "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.main.connection_string
-    "APPINSIGHTS_PROFILERFEATURE_VERSION"             = "1.0.0"
-    "APPINSIGHTS_SNAPSHOTFEATURE_VERSION"             = "1.0.0"
-    "ApplicationInsightsAgent_EXTENSION_VERSION"      = "~2"
-    "DiagnosticServices_EXTENSION_VERSION"            = "~3"
+    "APPINSIGHTS_INSTRUMENTATIONKEY"             = azurerm_application_insights.main.instrumentation_key
+    "APPLICATIONINSIGHTS_CONNECTION_STRING"      = azurerm_application_insights.main.connection_string
+    "APPINSIGHTS_PROFILERFEATURE_VERSION"        = "1.0.0"
+    "APPINSIGHTS_SNAPSHOTFEATURE_VERSION"        = "1.0.0"
+    "ApplicationInsightsAgent_EXTENSION_VERSION" = "~2"
+    "DiagnosticServices_EXTENSION_VERSION"       = "~3"
   }
 }
 
@@ -59,9 +59,9 @@ resource "azurerm_linux_web_app" "main" {
   )
 
   site_config {
-    http2_enabled = true
+    http2_enabled       = true
     minimum_tls_version = 1.2
-    app_command_line = "node server.js"
+    app_command_line    = "node server.js"
 
     application_stack {
       node_version = "18-lts"
