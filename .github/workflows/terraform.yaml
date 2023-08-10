@@ -88,7 +88,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: tfplan-${{ github.sha }}
-        path: tfplan-${{ github.sha }}
+        path: infra
         
     # Create string output of Terraform Plan
     - name: Create String Output
@@ -168,8 +168,8 @@ jobs:
     - name: Download Terraform Plan
       uses: actions/download-artifact@v3
       with:
-        name: tfplan
-        path: tfplan-${{ github.sha }}
+        name: tfplan-${{ github.sha }}
+        path: infra
 
     # Terraform Apply
     - name: Terraform Apply
