@@ -24,6 +24,15 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
 
+    - name: Set Azure Credentials from Secrets
+      run: |
+        echo "ARM_CLIENT_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.clientId')" >> $GITHUB_ENV
+        echo "ARM_CLIENT_SECRET=$(echo '$AZURE_CREDENTIALS' | jq -r '.clientSecret')" >> $GITHUB_ENV
+        echo "ARM_SUBSCRIPTION_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.subscriptionId')" >> $GITHUB_ENV
+        echo "ARM_TENANT_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.tenantId')" >> $GITHUB_ENV
+      env:
+        AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
     - name: Terraform Init
       run: |
         terraform init -backend-config="container_name=${{ secrets.TFSTATE_CONTAINER_NAME }}" \
@@ -33,15 +42,16 @@ jobs:
 
     - name: Terraform Plan
       run: |
-        terraform plan -out=tfplan
-      id: plan
+        terraform plan -out=tfplan | tee plan_output.txt
+        echo "plan_output=$(cat plan_output.txt)" >> $GITHUB_OUTPUT
 
     - name: Post plan results to PR
       uses: actions/github-script@v3
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          const output = `#### Terraform Plan:\n\`\`\`${{steps.plan.outputs.stdout}}\`\`\``;
+          const planOutput = process.env.plan_output;
+          const output = `#### Terraform Plan:\n\`\`\`${planOutput}\`\`\``;
           github.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
@@ -51,12 +61,8 @@ jobs:
 
     - name: Upload to Azure Blob Storage using Azure CLI
       run: |
-        echo "$AZURE_CREDENTIALS" > temp-creds.json
-        az login --service-principal -u $(jq -r '.clientId' temp-creds.json) -p $(jq -r '.clientSecret' temp-creds.json) --tenant $(jq -r '.tenantId' temp-creds.json)
+        az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
         az storage blob upload --account-name ${{ secrets.TERRAFORM_STORAGE_ACCOUNT }} --container-name ${{ secrets.TFPLAN_CONTAINER }} --type text/plain --name ${{ github.sha }}-tfplan --type text/plain --file ./tfplan
-      env:
-        AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-
 
   terraform_apply:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -72,6 +78,15 @@ jobs:
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
+
+    - name: Set Azure Credentials from Secrets
+      run: |
+        echo "ARM_CLIENT_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.clientId')" >> $GITHUB_ENV
+        echo "ARM_CLIENT_SECRET=$(echo '$AZURE_CREDENTIALS' | jq -r '.clientSecret')" >> $GITHUB_ENV
+        echo "ARM_SUBSCRIPTION_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.subscriptionId')" >> $GITHUB_ENV
+        echo "ARM_TENANT_ID=$(echo '$AZURE_CREDENTIALS' | jq -r '.tenantId')" >> $GITHUB_ENV
+      env:
+        AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Terraform Init
       run: |
