@@ -8,13 +8,13 @@ on:
     branches:
     - main
 
-#Special permissions required for OIDC authentication
+# Special permissions required for OIDC authentication
 permissions:
   id-token: write
   contents: read
   pull-requests: write
 
-#These environment variables are used by the terraform azure provider to setup OIDD authenticate. 
+# These environment variables are used by the terraform azure provider to setup OIDD authenticate. 
 env:
   AZURE_CREDENTIALS: "${{ secrets.AZURE_CREDENTIALS }}"
   ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
@@ -31,7 +31,7 @@ jobs:
       run:
         working-directory: infra
     env:
-      #this is needed since we are running terraform with read-only permissions
+      # This is needed since we are running terraform with read-only permissions
       ARM_SKIP_PROVIDER_REGISTRATION: true
     outputs:
       tfplanExitCode: ${{ steps.tf-plan.outputs.exitcode }}
@@ -46,15 +46,6 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_wrapper: false
-
-    # # Extract the individual credentials from AZURE_CREDENTIALS
-    # - name: Extract Azure Credentials
-    #   run: |
-    #     echo "ARM_CLIENT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientId')" >> $GITHUB_ENV
-    #     echo "ARM_CLIENT_SECRET=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientSecret')" >> $GITHUB_ENV
-    #     echo "ARM_SUBSCRIPTION_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.subscriptionId')" >> $GITHUB_ENV
-    #     echo "ARM_TENANT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.tenantId')" >> $GITHUB_ENV
-    #     echo "ARM_USE_MSI=true" >> $GITHUB_ENV
     
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
@@ -149,15 +140,6 @@ jobs:
     # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
-
-    # # Extract the individual credentials from AZURE_CREDENTIALS
-    # - name: Extract Azure Credentials
-    #   run: |
-    #     echo "ARM_CLIENT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientId')" >> $GITHUB_ENV
-    #     echo "ARM_CLIENT_SECRET=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientSecret')" >> $GITHUB_ENV
-    #     echo "ARM_SUBSCRIPTION_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.subscriptionId')" >> $GITHUB_ENV
-    #     echo "ARM_TENANT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.tenantId')" >> $GITHUB_ENV
-    #     echo "ARM_USE_MSI=true" >> $GITHUB_ENV
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
