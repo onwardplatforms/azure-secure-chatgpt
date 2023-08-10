@@ -5,12 +5,14 @@ on:
     branches:
     - main
     paths:
-    - 'infra/**'
+    - infra/**
+    - .github/workflows/terraform.yaml
   pull_request:
     branches:
     - main
     paths:
-    - 'infra/**'
+    - infra/**
+    - .github/workflows/terraform.yaml
 
 # Special permissions required for OIDC authentication
 permissions:

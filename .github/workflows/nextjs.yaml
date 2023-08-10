@@ -9,11 +9,17 @@ on:
     branches: [ main ]
     paths:
     - 'app/**'
+    - .github/workflows/nextjs.yaml
   pull_request:
     branches: [ main ]
     paths:
     - 'app/**'
+    - .github/workflows/nextjs.yaml
   workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   build:
@@ -85,12 +91,14 @@ jobs:
         with:
           name: app-code
 
+      - name: Construct AZURE_CREDENTIALS from individual secrets
+        run: |
+          echo AZURE_CREDENTIALS="{\"clientId\": \"${{ secrets.AZURE_CLIENT_ID }}\", \"clientSecret\": \"${{ secrets.AZURE_CLIENT_SECRET }}\", \"tenantId\": \"${{ secrets.AZURE_TENANT_ID }}\", \"subscriptionId\": \"${{ secrets.AZURE_SUBSCRIPTION_ID }}\"}" >> $GITHUB_ENV
+
       - name: Authenticate with Azure
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          creds: ${{ env.AZURE_CREDENTIALS }}
 
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
