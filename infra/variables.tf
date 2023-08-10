@@ -1,26 +1,5 @@
 # Project variables
 
-# variable "tenant_id" {
-#   description = "The Azure Tenant ID"
-#   type        = string
-# }
-
-# variable "subscription_id" {
-#   description = "The Azure Subscription ID"
-#   type        = string
-# }
-
-# variable "client_id" {
-#   description = "The Azure Client ID"
-#   type        = string
-# }
-
-# variable "client_secret" {
-#   description = "The Azure Client Secret"
-#   type        = string
-#   sensitive   = true
-# }
-
 variable "name" {
   type        = string
   description = "The Name which should be used for this Resource Group. Changing this forces a new Resource Group to be created."
