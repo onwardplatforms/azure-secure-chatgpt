@@ -1,110 +1,151 @@
-name: Terraform Deployment to Azure
+name: 'Terraform Plan/Apply'
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
-      - main
-  workflow_dispatch:
+    - main
+  pull_request:
+    branches:
+    - main
+
+#Special permissions required for OIDC authentication
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+#These environment variables are used by the terraform azure provider to setup OIDD authenticate. 
+env:
+  AZURE_CREDENTIALS: "${{ secrets.AZURE_CREDENTIALS }}"
 
 jobs:
-  terraform_plan:
-    if: github.event_name == 'pull_request'
+  terraform-plan:
+    name: 'Terraform Plan'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: infra
+    env:
+      #this is needed since we are running terraform with read-only permissions
+      ARM_SKIP_PROVIDER_REGISTRATION: true
+    outputs:
+      tfplanExitCode: ${{ steps.tf-plan.outputs.exitcode }}
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
 
+    # Install the latest version of the Terraform CLI
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
 
-    - name: Set Azure Credentials for Terraform
+    # Extract the individual credentials from AZURE_CREDENTIALS
+    - name: Extract Azure Credentials
       run: |
-        creds=${{ toJson(secrets.AZURE_CREDENTIALS) }}
-        echo "TF_VAR_client_id=${creds.clientId}" >> $GITHUB_ENV
-        echo "TF_VAR_client_secret=${creds.clientSecret}" >> $GITHUB_ENV
-        echo "TF_VAR_subscription_id=${creds.subscriptionId}" >> $GITHUB_ENV
-        echo "TF_VAR_tenant_id=${creds.tenantId}" >> $GITHUB_ENV
-      env:
-        AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-
+        echo "ARM_CLIENT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.clientId')" >> $GITHUB_ENV
+        echo "ARM_SUBSCRIPTION_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.subscriptionId')" >> $GITHUB_ENV
+        echo "ARM_TENANT_ID=$(echo "$AZURE_CREDENTIALS" | jq -r '.tenantId')" >> $GITHUB_ENV
+    
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
-      run: |
-        terraform init -backend-config="container_name=${{ secrets.TFSTATE_CONTAINER_NAME }}" \
-                       -backend-config="key=${{ secrets.TFSTATE_NAME }}" \
-                       -backend-config="resource_group_name=${{ secrets.TERRAFORM_RESOURCE_GROUP }}" \
-                       -backend-config="storage_account_name=${{ secrets.TFSTATE_STORAGE_ACCOUNT }}"
+      run: terraform init
 
+    # Checks that all Terraform configuration files adhere to a canonical format
+    # Will fail the build if not
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    # An exit code of 0 indicated no changes, 1 a terraform failure, 2 there are pending changes.
     - name: Terraform Plan
+      id: tf-plan
       run: |
-        terraform plan -out=tfplan | tee plan_output.txt
-        echo "plan_output=$(cat plan_output.txt)" >> $GITHUB_OUTPUT
+        export exitcode=0
+        terraform plan -detailed-exitcode -no-color -out tfplan || export exitcode=$?
 
-    - name: Post plan results to PR
-      uses: actions/github-script@v3
+        echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
+        
+        if [ $exitcode -eq 1 ]; then
+          echo Terraform Plan Failed!
+          exit 1
+        else 
+          exit 0
+        fi
+        
+    # Save plan to artifacts  
+    - name: Publish Terraform Plan
+      uses: actions/upload-artifact@v3
       with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          const planOutput = process.env.plan_output;
-          const output = `#### Terraform Plan:\n\`\`\`${planOutput}\`\`\``;
-          github.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: output
-          });
-
-    - name: Upload to Azure Blob Storage using Azure CLI
+        name: tfplan
+        path: tfplan
+        
+    # Create string output of Terraform Plan
+    - name: Create String Output
+      id: tf-plan-string
       run: |
-        az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
-        az storage blob upload --account-name ${{ secrets.TERRAFORM_STORAGE_ACCOUNT }} --container-name ${{ secrets.TFPLAN_CONTAINER }} --type text/plain --name ${{ github.sha }}-tfplan --type text/plain --file ./tfplan
-
-  terraform_apply:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    needs: terraform_plan
+        TERRAFORM_PLAN=$(terraform show -no-color tfplan)
+        
+        delimiter="$(openssl rand -hex 8)"
+        echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
+        echo "## Terraform Plan Output" >> $GITHUB_OUTPUT
+        echo "<details><summary>Click to expand</summary>" >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        echo '```terraform' >> $GITHUB_OUTPUT
+        echo "$TERRAFORM_PLAN" >> $GITHUB_OUTPUT
+        echo '```' >> $GITHUB_OUTPUT
+        echo "</details>" >> $GITHUB_OUTPUT
+        echo "${delimiter}" >> $GITHUB_OUTPUT
+        
+    # Publish Terraform Plan as task summary
+    - name: Publish Terraform Plan to Task Summary
+      env:
+        SUMMARY: ${{ steps.tf-plan-string.outputs.summary }}
+      run: |
+        echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+      
+    # If this is a PR post the changes
+    - name: Push Terraform Output to PR
+      if: github.ref != 'refs/heads/main'
+      uses: actions/github-script@v6
+      env:
+        SUMMARY: "${{ steps.tf-plan-string.outputs.summary }}"
+      with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `${process.env.SUMMARY}`;
+            github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+            })
+                
+  terraform-apply:
+    name: 'Terraform Apply'
+    if: github.ref == 'refs/heads/main' && needs.terraform-plan.outputs.tfplanExitCode == 2
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: infra
-
+    environment: production
+    needs: [terraform-plan]
+    
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
 
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
+      uses: hashicorp/setup-terraform@v2
 
-    - name: Set Azure Credentials for Terraform
-      run: |
-        creds=${{ toJson(secrets.AZURE_CREDENTIALS) }}
-        echo "TF_VAR_client_id=${creds.clientId}" >> $GITHUB_ENV
-        echo "TF_VAR_client_secret=${creds.clientSecret}" >> $GITHUB_ENV
-        echo "TF_VAR_subscription_id=${creds.subscriptionId}" >> $GITHUB_ENV
-        echo "TF_VAR_tenant_id=${creds.tenantId}" >> $GITHUB_ENV
-          env:
-        AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
-      run: |
-        terraform init -backend-config="container_name=${{ secrets.TFSTATE_CONTAINER_NAME }}" \
-                       -backend-config="key=${{ secrets.TFSTATE_NAME }}" \
-                       -backend-config="resource_group_name=${{ secrets.TERRAFORM_RESOURCE_GROUP }}" \
-                       -backend-config="storage_account_name=${{ secrets.TFSTATE_STORAGE_ACCOUNT }}"
+      run: terraform init
 
-    - name: Download tfplan from storage account
-      uses: Azure/blob-storage-download-action@v1
+    # Download saved plan from artifacts  
+    - name: Download Terraform Plan
+      uses: actions/download-artifact@v3
       with:
-        container-url: ${{ secrets.TFPLAN_CONTAINER }}
-        blob-name: ${{ github.sha }}-tfplan
-        destination: tfplan
-        credentials: ${{ secrets.AZURE_CREDENTIALS }}
+        name: tfplan
 
+    # Terraform Apply
     - name: Terraform Apply
-      run: |
-        terraform apply "tfplan"
+      run: terraform apply -auto-approve tfplan
