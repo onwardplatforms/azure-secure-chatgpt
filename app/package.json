@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@azure/cosmos": "^3.17.3",
     "@radix-ui/react-alert-dialog": "^1.0.4",
     "@radix-ui/react-avatar": "^1.0.3",
     "@radix-ui/react-dialog": "^1.0.4",
@@ -28,6 +29,7 @@
     "@types/react-dom": "18.2.7",
     "ai": "^2.1.32",
     "autoprefixer": "10.4.14",
+    "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
@@ -47,5 +49,8 @@
     "tailwindcss": "3.3.3",
     "tailwindcss-animate": "^1.0.6",
     "typescript": "5.1.6"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2"
   }
 }

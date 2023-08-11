@@ -34,11 +34,12 @@ import { ShareButton } from './share-button';
 export default function Chat({
   id,
   initialMessages,
+  children,
 }: {
   id?: string;
   initialMessages?: Message[];
+  children?: React.ReactNode;
 }) {
-  const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
   const { toast } = useToast();
   const previewToken = process.env.PREVIEW_TOKEN;
   const { messages, append, reload, stop, isLoading, input, setInput } =
@@ -49,6 +50,9 @@ export default function Chat({
         id,
         previewToken,
       },
+      onError(error) {
+        console.log('Error', error);
+      },
       onResponse(response) {
         if (response.status === 401 || response.status > 400) {
           toast({ variant: 'destructive', description: response.statusText });
@@ -58,104 +62,16 @@ export default function Chat({
 
   return (
     <div className="flex w-full h-full">
-      <ChatListPanel
-        activeIndex={activeIndex}
-        setActiveIndex={setActiveIndex}
-        previews={previews}
-      />
+      {children}
+
       <ChatWindow
         isLoading={isLoading}
         reload={reload}
         append={append}
-        key={activeIndex}
         messages={messages}
         stop={stop}
+        // id={id}
       />
-    </div>
-  );
-}
-
-const ChatListPanel = ({
-  previews,
-  activeIndex,
-  setActiveIndex,
-}: {
-  previews: Preview[];
-  setActiveIndex: Function;
-  activeIndex: number | null;
-}) => {
-  const [search, setSearch] = React.useState('');
-
-  function createNewSession() {
-    setActiveIndex(null);
-  }
-
-  // filter previews based on search by name and messages
-  const filteredPreviews = previews.filter(
-    (preview) =>
-      preview.name.toLowerCase().includes(search.toLowerCase()) ||
-      preview.messages.some((message) =>
-        message.content.toLowerCase().includes(search.toLowerCase())
-      )
-  );
-
-  return (
-    <div className="text-foreground border-r border-border p-4 w-1/4 min-w-[230px] h-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold tracking-tight">Sessions</h2>
-        <Button
-          onClick={createNewSession}
-          variant={'outline'}
-          className="rounded-md"
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
-      </div>
-
-      <Input
-        className="p-2 pl-4 rounded-md  w-full mb-4 max-h-[35px]"
-        type="text"
-        placeholder="Search Chats..."
-        onChange={(e) => setSearch(e?.target?.value ?? '')}
-      />
-
-      <div className="overflow-y-auto flex-grow space-y-2">
-        {filteredPreviews.map((preview, index) => (
-          <ChatPreview
-            setActiveIndex={() => setActiveIndex(index)}
-            key={index}
-            isActive={index === activeIndex}
-            title={preview.name}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-function ChatPreview({
-  title,
-  setActiveIndex,
-  isActive,
-}: {
-  title: string;
-  setActiveIndex: Function;
-  isActive: boolean;
-}) {
-  return (
-    <div className="flex">
-      <Button
-        onClick={() => setActiveIndex()}
-        variant={'ghost'}
-        className={`w-full justify-start ${
-          isActive
-            ? 'bg-secondary-foreground/10'
-            : 'dark:hover:bg-secondary/50 hover:bg-secondary-foreground/5'
-        }  `}
-      >
-        <ChatBubbleIcon className="mr-4 h-4 w-4" />
-        <span className=" w-full truncate text-left">{title}</span>
-      </Button>
     </div>
   );
 }
@@ -163,19 +79,19 @@ function ChatPreview({
 const ChatWindow = ({
   messages,
   append,
-  id,
   title = 'No title',
   isLoading,
   stop,
   reload,
+  id,
 }: {
   messages: Message[] | null;
   append: Function;
-  id?: string;
   title?: string;
   isLoading: boolean;
   stop: Function;
   reload: Function;
+  id?: string;
 }) => {
   const groups = [
     {
@@ -215,6 +131,8 @@ const ChatWindow = ({
   const [input, setInput] = React.useState('');
 
   const messagesEndRef = useScrollToBottom({ messages });
+
+  console.log(messages?.length);
 
   if (messages?.length === 0 || !messages)
     return (
@@ -291,8 +209,8 @@ const ChatWindow = ({
             input={input}
             setInput={setInput}
             onSubmit={async (value: string) => {
+              console.log('Submitting');
               await append({
-                id: '123',
                 content: value,
                 role: 'user',
               });
@@ -370,7 +288,7 @@ const ChatWindow = ({
           setInput={setInput}
           onSubmit={async (value: string) => {
             await append({
-              id: '123',
+              id,
               content: value,
               role: 'user',
             });
