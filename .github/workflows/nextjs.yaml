@@ -23,6 +23,7 @@ permissions:
 
 jobs:
   build:
+    name: App Build
     runs-on: ubuntu-latest
 
     steps:
@@ -79,6 +80,8 @@ jobs:
           path: ./site-deploy/app-code.zip
 
   deploy:
+    name: App Deploy
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     needs: build
