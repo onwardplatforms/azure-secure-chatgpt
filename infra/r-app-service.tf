@@ -2,6 +2,7 @@ locals {
   app_settings_defaults = {
     # This URI will be used to connect the application to key vault to get openai api keys
     "KEY_VAULT_URI" = azurerm_key_vault.main.vault_uri
+    "WEBSITE_RUN_FROM_PACKAGE" = azurerm_storage_blob.function_app_code.url
     # These settings are required to automatically connect app insights to the web app
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main.instrumentation_key
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.main.connection_string
@@ -10,33 +11,6 @@ locals {
     "ApplicationInsightsAgent_EXTENSION_VERSION"      = "~2"
     "DiagnosticServices_EXTENSION_VERSION"            = "~3"
   }
-}
-
-# resource "azurerm_app_service_environment" "main" {
-#   count = var.app_service_isolation_enabled == true ? 1 : 0
-
-#   name                         = "ase-${local.project_name}"
-#   resource_group_name          = azurerm_resource_group.main.name
-#   subnet_id                    = azurerm_subnet.ase.id #TODO: Add this
-#   pricing_tier                 = "I2"
-#   front_end_scale_factor       = 10
-#   internal_load_balancing_mode = "Web, Publishing"
-#   allowed_user_ip_cidrs        = ["11.22.33.44/32", "55.66.77.0/24"]
-
-#   cluster_setting {
-#     name  = "DisableTls1.0"
-#     value = "1"
-#   }
-# }
-
-resource "azurerm_service_plan" "main" {
-  name                = "asp-${local.project_name}"
-  resource_group_name = azurerm_resource_group.application.name
-  location            = azurerm_resource_group.application.location
-  os_type             = "Linux"
-  sku_name            = var.app_service_plan_sku
-
-  tags = var.tags
 }
 
 resource "azurerm_linux_web_app" "main" {
@@ -75,15 +49,6 @@ resource "azurerm_linux_web_app" "main" {
       virtual_network_subnet_id,
     ]
   }
-
-  tags = var.tags
-}
-
-resource "azurerm_application_insights" "main" {
-  name                = "appi-${local.project_name}}"
-  location            = azurerm_resource_group.application.location
-  resource_group_name = azurerm_resource_group.application.name
-  application_type    = "web"
 
   tags = var.tags
 }

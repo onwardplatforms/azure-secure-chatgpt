@@ -1,9 +1,9 @@
 import { AI_MODELS } from '@/lib/constants';
 import {
-  Test,
+  // Test,
   appendMessageToSessionById,
   createSession,
-  wowzers,
+  // wowzers,
 } from '@/lib/sessions';
 import { OpenAIStream, StreamingTextResponse, nanoid } from 'ai';
 import { Configuration, OpenAIApi } from 'openai-edge';
@@ -73,26 +73,26 @@ export async function POST(req: Request) {
           content: json.messages[messages.length - 1].content,
           role: 'user',
         };
-        // if (id) {
-        //   console.log('id is present');
-        //   await appendMessageToSessionById(id, messageItem);
-        // }
-        // // }
-        // console.log('No session id');
+        if (id) {
+          console.log('id is present');
+          await appendMessageToSessionById(id, messageItem);
+        } else if (!sessionId) {
+        console.log('No session id');
+        }
         // } else {
-        //   // Create a new session
-        //   const seshId = await createSession(
-        //     userId,
-        //     AI_MODELS.AZURE_GPT3_5_TURBO
-        //   );
+          // // Create a new session
+          // const seshId = await createSession(
+          //   userId,
+          //   AI_MODELS.AZURE_GPT3_5_TURBO
+          // );
         //   if (!seshId) throw new Error("Couldn't create session");
         //   // find a better way to do this
         //   await appendMessageToSessionById(seshId, messageItem);
         //   await appendMessageToSessionById(seshId, prevMessage);
         //   console.log('shit');
         // }
-      },
-    });
+      // },
+    }});
     return new StreamingTextResponse(stream);
   } catch (err) {
     console.log('Error in POST /api/chat');

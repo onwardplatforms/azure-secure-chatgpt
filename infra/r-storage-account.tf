@@ -9,8 +9,14 @@ resource "azurerm_storage_account" "main" {
   tags = var.tags
 }
 
-resource "azurerm_storage_container" "main" {
+resource "azurerm_storage_container" "app_builds" {
   name                  = "app-builds"
+  storage_account_name  = azurerm_storage_account.main.name
+  container_access_type = "private"
+}
+
+resource "azurerm_storage_container" "function_releases" {
+  name                  = "function-releases"
   storage_account_name  = azurerm_storage_account.main.name
   container_access_type = "private"
 }

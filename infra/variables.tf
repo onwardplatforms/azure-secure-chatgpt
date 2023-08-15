@@ -1,25 +1,25 @@
 # Project variables
 
-variable "tenant_id" {
-  description = "The Azure Tenant ID"
-  type        = string
-}
+# variable "tenant_id" {
+#   description = "The Azure Tenant ID"
+#   type        = string
+# }
 
-variable "subscription_id" {
-  description = "The Azure Subscription ID"
-  type        = string
-}
+# variable "subscription_id" {
+#   description = "The Azure Subscription ID"
+#   type        = string
+# }
 
-variable "client_id" {
-  description = "The Azure Client ID"
-  type        = string
-}
+# variable "client_id" {
+#   description = "The Azure Client ID"
+#   type        = string
+# }
 
-variable "client_secret" {
-  description = "The Azure Client Secret"
-  type        = string
-  sensitive   = true
-}
+# variable "client_secret" {
+#   description = "The Azure Client Secret"
+#   type        = string
+#   sensitive   = true
+# }
 
 variable "name" {
   type        = string
@@ -42,7 +42,7 @@ variable "tags" {
 variable "deploy_to_virtual_network" {
   type        = bool
   description = "Deploy the resources to a virtual network. Defaults to true."
-  default     = true
+  default     = false
 }
 
 # Cosmos Database Variables
