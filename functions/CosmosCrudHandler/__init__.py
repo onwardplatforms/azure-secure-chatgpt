@@ -8,13 +8,13 @@ import json
 url = os.environ['COSMOSDB_URL']
 key = os.environ['COSMOSDB_KEY']
 database = os.environ['COSMOSDB_DATABASE']
-container = os.environ['COSMOSDB_CONTAINER']
 client = CosmosClient(url, credential=key)
 database = client.get_database_client(database)
-container = database.get_container_client(container)
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     action = req.params.get('action')
+    container = req.params.get('container')
+    container = database.get_container_client(container)
     logging.info(f"Received action: {action}")
 
     if action == 'create':
@@ -28,7 +28,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         except json.JSONDecodeError:
             return func.HttpResponse("Invalid partition key header format", status_code=400)
 
-        created_item = container.create_item(body=item, partition_key=partition_key_value[0])
+        created_item = container.create_item(body=item)
         return func.HttpResponse(json.dumps(created_item), status_code=201, mimetype="application/json")
     
     elif action == 'read':
@@ -56,7 +56,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         except json.JSONDecodeError:
             return func.HttpResponse("Invalid partition key header format", status_code=400)
             
-        updated_item = container.upsert_item(body=item, partition_key=partition_key_value[0])
+        updated_item = container.upsert_item(body=item)
         return func.HttpResponse(json.dumps(updated_item), status_code=200, mimetype="application/json")
 
     elif action == 'delete':

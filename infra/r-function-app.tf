@@ -22,7 +22,7 @@ resource "azurerm_linux_function_app" "main" {
     COSMOSDB_URL      = azurerm_cosmosdb_account.main.endpoint
     COSMOSDB_KEY      = azurerm_cosmosdb_account.main.primary_key
     COSMOSDB_DATABASE = azurerm_cosmosdb_sql_database.main.name
-    COSMOSDB_CONTAINER = azurerm_cosmosdb_sql_container.main.name
+    WEBSITE_RUN_FROM_PACKAGE = azurerm_storage_blob.function_app_code.url
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.main.instrumentation_key
     APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.main.connection_string
   }

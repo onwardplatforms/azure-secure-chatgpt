@@ -61,12 +61,38 @@ resource "azurerm_cosmosdb_sql_database" "main" {
   throughput          = var.cosmos_db_serverless_enabled == true ? null : 400
 }
 
-resource "azurerm_cosmosdb_sql_container" "main" {
-  name                  = "${local.project_name}-container"
+resource "azurerm_cosmosdb_sql_container" "users" {
+  name                  = "users"
   resource_group_name   = azurerm_cosmosdb_account.main.resource_group_name
   account_name          = azurerm_cosmosdb_account.main.name
   database_name         = azurerm_cosmosdb_sql_database.main.name
-  partition_key_path    = "/user/id"
+  partition_key_path    = "/id"
+  partition_key_version = 1
+  throughput            = 400
+
+  indexing_policy {
+    indexing_mode = "consistent"
+
+    included_path {
+      path = "/*"
+    }
+
+    included_path {
+      path = "/included/?"
+    }
+
+    excluded_path {
+      path = "/excluded/?"
+    }
+  }
+}
+
+resource "azurerm_cosmosdb_sql_container" "sessions" {
+  name                  = "sessions"
+  resource_group_name   = azurerm_cosmosdb_account.main.resource_group_name
+  account_name          = azurerm_cosmosdb_account.main.name
+  database_name         = azurerm_cosmosdb_sql_database.main.name
+  partition_key_path    = "/id"
   partition_key_version = 1
   throughput            = 400
 
