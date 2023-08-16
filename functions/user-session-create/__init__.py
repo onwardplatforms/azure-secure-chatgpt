@@ -32,6 +32,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(str(e), status_code=500)
 
     return func.HttpResponse(
-        str(record),
+        json.dumps(record),
         status_code=200
     )
