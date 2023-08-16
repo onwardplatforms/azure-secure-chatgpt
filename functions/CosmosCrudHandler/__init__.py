@@ -19,22 +19,59 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     if action == 'create':
         item = req.get_json()
-        created_item = container.create_item(body=item)
+        partition_key_value = req.headers.get('x-ms-documentdb-partitionkey')
+        if not partition_key_value:
+            return func.HttpResponse("Partition key header is missing", status_code=400)
+
+        try:
+            partition_key_value = json.loads(partition_key_value)
+        except json.JSONDecodeError:
+            return func.HttpResponse("Invalid partition key header format", status_code=400)
+
+        created_item = container.create_item(body=item, partition_key=partition_key_value[0])
         return func.HttpResponse(json.dumps(created_item), status_code=201, mimetype="application/json")
+    
     elif action == 'read':
         item_id = req.params.get('id')
-        partition_key = req.params.get('partitionKey')
-        logging.info(f"Attempting to read item with id: {item_id} and partitionKey: {partition_key}")
-        item = container.read_item(item=item_id, partition_key=partition_key)
+        partition_key_value = req.headers.get('x-ms-documentdb-partitionkey')
+        if not partition_key_value:
+            return func.HttpResponse("Partition key header is missing", status_code=400)
+
+        try:
+            partition_key_value = json.loads(partition_key_value)
+        except json.JSONDecodeError:
+            return func.HttpResponse("Invalid partition key header format", status_code=400)
+            
+        item = container.read_item(item=item_id, partition_key=partition_key_value[0])
         return func.HttpResponse(json.dumps(item), status_code=200, mimetype="application/json")
+
     elif action == 'update':
         item = req.get_json()
-        updated_item = container.upsert_item(body=item)
+        partition_key_value = req.headers.get('x-ms-documentdb-partitionkey')
+        if not partition_key_value:
+            return func.HttpResponse("Partition key header is missing", status_code=400)
+            
+        try:
+            partition_key_value = json.loads(partition_key_value)
+        except json.JSONDecodeError:
+            return func.HttpResponse("Invalid partition key header format", status_code=400)
+            
+        updated_item = container.upsert_item(body=item, partition_key=partition_key_value[0])
         return func.HttpResponse(json.dumps(updated_item), status_code=200, mimetype="application/json")
+
     elif action == 'delete':
         item_id = req.params.get('id')
-        partition_key = req.params.get('partitionKey')
-        container.delete_item(item=item_id, partition_key=partition_key)
+        partition_key_value = req.headers.get('x-ms-documentdb-partitionkey')
+        if not partition_key_value:
+            return func.HttpResponse("Partition key header is missing", status_code=400)
+            
+        try:
+            partition_key_value = json.loads(partition_key_value)
+        except json.JSONDecodeError:
+            return func.HttpResponse("Invalid partition key header format", status_code=400)
+            
+        container.delete_item(item=item_id, partition_key=partition_key_value[0])
         return func.HttpResponse("Item deleted", status_code=204)
+
     else:
         return func.HttpResponse("Action not supported", status_code=400)

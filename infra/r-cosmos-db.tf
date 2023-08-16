@@ -66,7 +66,7 @@ resource "azurerm_cosmosdb_sql_container" "main" {
   resource_group_name   = azurerm_cosmosdb_account.main.resource_group_name
   account_name          = azurerm_cosmosdb_account.main.name
   database_name         = azurerm_cosmosdb_sql_database.main.name
-  partition_key_path    = "/id"
+  partition_key_path    = "/user/id"
   partition_key_version = 1
   throughput            = 400
 
