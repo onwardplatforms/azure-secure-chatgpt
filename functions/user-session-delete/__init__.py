@@ -13,8 +13,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         cosmos_db_primary_key = os.environ["COSMOSDB_KEY"]
         database_name = os.environ["COSMOSDB_DATABASE"]
         container_name = "sessions"
-        session_id = req.route_params.get('session_id')
         user_id = req.route_params.get('user_id')
+        session_id = req.route_params.get('session_id')
+
     except Exception as e:
         return func.HttpResponse(str(e), status_code=500)
 
@@ -22,17 +23,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # Try to connect to the client and collect the data from the database
         client = create_cosmos_db_client(cosmos_db_endpoint, cosmos_db_primary_key)
         container = connect_to_cosmos_db_container(client, database_name, container_name)
-        query = f"SELECT * FROM {container_name} p WHERE p.userId = '{user_id}' AND p.id = '{session_id}'"
-        records = query_records_from_cosmos_db(
-            container,
-            query,
-        )
-        record = records[0]
+        delete_record_from_cosmos_db(container, doc_id=session_id, partition_key=user_id)
 
     except Exception as e:
         return func.HttpResponse(str(e), status_code=500)
 
     return func.HttpResponse(
-        json.dumps(record),
+        f"Document with ID {session_id} deleted.",
         status_code=200
     )

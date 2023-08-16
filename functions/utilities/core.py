@@ -33,6 +33,9 @@ def read_records_from_cosmos_db(container):
     
     return records
 
+def delete_record_from_cosmos_db(container, doc_id, partition_key):
+    container.delete_item(doc_id, partition_key)
+
 def read_record_from_cosmos_db(container, doc_id, partition_key):
     try:
         return container.read_item(item=doc_id, partition_key=partition_key)
@@ -48,7 +51,7 @@ def query_records_from_cosmos_db(container, query):
     ):
         records.append(json.dumps(item, indent=True))
 
-    return records
+    return [json.loads(record) for record in records]
 
 def update_record_in_cosmos_db(container, data, doc_id, partition_key):
     try:
