@@ -21,7 +21,7 @@ resource "azurerm_linux_web_app" "main" {
 
   https_only = true
   # Turn off public network access if the user decides to deploy to a virtual network
-  public_network_access_enabled = var.deploy_to_virtual_network ? false : true
+  public_network_access_enabled = var.public_network_access_enabled
 
   app_settings = merge(
     # App settings provided by users
@@ -62,7 +62,7 @@ resource "azurerm_linux_web_app" "main" {
 
 # Provide connectivity from the virtual network to the web app
 resource "azurerm_private_endpoint" "app" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = "pep-app-${local.project_name}"
   location            = azurerm_resource_group.networking.location
@@ -78,14 +78,14 @@ resource "azurerm_private_endpoint" "app" {
 }
 
 resource "azurerm_private_dns_zone" "app" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = "privatelink.azurewebsites.net"
   resource_group_name = azurerm_resource_group.networking.name
 }
 
 resource "azurerm_private_dns_a_record" "app" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = azurerm_linux_web_app.main.name
   zone_name           = azurerm_private_dns_zone.app[count.index].name
@@ -95,7 +95,7 @@ resource "azurerm_private_dns_a_record" "app" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "app" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                  = "${azurerm_virtual_network.main[count.index].name}-link-to-${replace(azurerm_private_dns_zone.app[count.index].name, ".", "-")}"
   resource_group_name   = azurerm_resource_group.networking.name
@@ -105,7 +105,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "app" {
 
 # Provide connectivity from the web app to the virtual network
 resource "azurerm_app_service_virtual_network_swift_connection" "app" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   app_service_id = azurerm_linux_web_app.main.id
   subnet_id      = azurerm_subnet.app_services[count.index].id

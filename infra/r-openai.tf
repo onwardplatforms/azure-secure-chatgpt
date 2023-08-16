@@ -17,7 +17,7 @@ resource "azurerm_cognitive_account" "main" {
 
 # Provide connectivity from the virtual network to the cognitive services account
 resource "azurerm_private_endpoint" "openai" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = "pep-openai-${local.project_name}"
   location            = azurerm_resource_group.networking.location
@@ -33,14 +33,14 @@ resource "azurerm_private_endpoint" "openai" {
 }
 
 resource "azurerm_private_dns_zone" "openai" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = "privatelink.openai.azure.com"
   resource_group_name = azurerm_resource_group.networking.name
 }
 
 resource "azurerm_private_dns_a_record" "openai" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = azurerm_cognitive_account.main.name
   zone_name           = azurerm_private_dns_zone.openai[count.index].name
@@ -50,7 +50,7 @@ resource "azurerm_private_dns_a_record" "openai" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "openai" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                  = "${azurerm_virtual_network.main[count.index].name}-link-to-${replace(azurerm_private_dns_zone.openai[count.index].name, ".", "-")}"
   resource_group_name   = azurerm_resource_group.networking.name

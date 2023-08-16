@@ -13,6 +13,10 @@ resource "azurerm_linux_function_app" "main" {
 
   site_config {
     always_on = true
+
+    # Application insights settings
+    application_insights_connection_string = azurerm_application_insights.main.connection_string
+    application_insights_key = azurerm_application_insights.main.instrumentation_key
     application_stack {
         python_version = "3.9"
     }
@@ -23,8 +27,6 @@ resource "azurerm_linux_function_app" "main" {
     COSMOSDB_KEY      = azurerm_cosmosdb_account.main.primary_key
     COSMOSDB_DATABASE = azurerm_cosmosdb_sql_database.main.name
     WEBSITE_RUN_FROM_PACKAGE = azurerm_storage_blob.function_app_code.url
-    APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.main.instrumentation_key
-    APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.main.connection_string
   }
 }
 

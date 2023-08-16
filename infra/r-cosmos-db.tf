@@ -1,5 +1,5 @@
 locals {
-  geo_locations = var.cosmos_db_serverless_enabled ? [var.location] : var.cosmos_db_geo_locations
+  geo_locations = var.enable_serverless ? [var.location] : var.cosmos_db_geo_locations
 }
 
 # Creates a cosmos database account
@@ -12,7 +12,7 @@ resource "azurerm_cosmosdb_account" "main" {
 
   enable_automatic_failover         = true
   local_authentication_disabled     = false
-  is_virtual_network_filter_enabled = var.deploy_to_virtual_network
+  is_virtual_network_filter_enabled = var.public_network_access_enabled
 
   identity {
     type = "SystemAssigned"
@@ -20,14 +20,14 @@ resource "azurerm_cosmosdb_account" "main" {
 
   dynamic "capabilities" {
     # Ensure serverless is enabled if desired
-    for_each = var.cosmos_db_serverless_enabled && var.deploy_to_virtual_network == false ? distinct(concat(var.cosmos_db_capabilities, ["EnableServerless"])) : var.cosmos_db_capabilities
+    for_each = var.enable_serverless && var.public_network_access_enabled == false ? distinct(concat(var.cosmos_db_capabilities, ["EnableServerless"])) : var.cosmos_db_capabilities
     content {
       name = capabilities.value
     }
   }
 
   dynamic "virtual_network_rule" {
-    for_each = var.deploy_to_virtual_network ? ["enabled"] : []
+    for_each = var.public_network_access_enabled ? [] : ["enabled"]
     content {
       id = azurerm_subnet.private_endpoints[0].id
     }
@@ -58,7 +58,7 @@ resource "azurerm_cosmosdb_sql_database" "main" {
   name                = "cosmos-sql-${local.project_name}"
   resource_group_name = azurerm_cosmosdb_account.main.resource_group_name
   account_name        = azurerm_cosmosdb_account.main.name
-  throughput          = var.cosmos_db_serverless_enabled == true ? null : 400
+  throughput          = var.enable_serverless == true ? null : 400
 }
 
 resource "azurerm_cosmosdb_sql_container" "users" {
@@ -92,7 +92,7 @@ resource "azurerm_cosmosdb_sql_container" "sessions" {
   resource_group_name   = azurerm_cosmosdb_account.main.resource_group_name
   account_name          = azurerm_cosmosdb_account.main.name
   database_name         = azurerm_cosmosdb_sql_database.main.name
-  partition_key_path    = "/id"
+  partition_key_path    = "/userId"
   partition_key_version = 1
   throughput            = 400
 
@@ -115,7 +115,7 @@ resource "azurerm_cosmosdb_sql_container" "sessions" {
 
 # Provide connectivity from the virtual network to the cosmos database account
 resource "azurerm_private_endpoint" "cosmos_db" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = "pep-cosmosdb-${local.project_name}"
   location            = azurerm_resource_group.networking.location
@@ -131,14 +131,14 @@ resource "azurerm_private_endpoint" "cosmos_db" {
 }
 
 resource "azurerm_private_dns_zone" "cosmos_db" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = "privatelink.documents.azure.us"
   resource_group_name = azurerm_resource_group.networking.name
 }
 
 resource "azurerm_private_dns_a_record" "cosmos_db" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = azurerm_cosmosdb_account.main.name
   zone_name           = azurerm_private_dns_zone.cosmos_db[count.index].name
@@ -148,7 +148,7 @@ resource "azurerm_private_dns_a_record" "cosmos_db" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "cosmos_db" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                  = "${azurerm_virtual_network.main[count.index].name}-link-to-${replace(azurerm_private_dns_zone.cosmos_db[count.index].name, ".", "-")}"
   resource_group_name   = azurerm_resource_group.networking.name

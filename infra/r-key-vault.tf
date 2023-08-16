@@ -24,7 +24,7 @@ resource "azurerm_key_vault" "main" {
 # # Ensure the principal running Terraform has access to key vault secrets
 # resource "azurerm_role_assignment" "key_vault_secrets_officer_current" {
 #   scope                = azurerm_key_vault.main.id
-#   role_definition_name = data.azurerm_builtin_role_definition.key_vault_secrets_officer.name
+#   role_definition_name = data.azurerm_role_definition.key_vault_secrets_officer.name
 #   principal_id         = data.azurerm_client_config.current.object_id
 # }
 
@@ -50,9 +50,20 @@ resource "azurerm_key_vault" "main" {
 #   ]
 # }
 
+# resource "azurerm_key_vault_secret" "function_app_key" {
+#   name         = "function-app-key"
+#   value        = azurerm_linux_function_app.main. # finish this
+#   key_vault_id = azurerm_key_vault.main.id
+
+#   # Ensure the role assignment is complete before trying to add the secret
+#   depends_on = [
+#     azurerm_role_assignment.key_vault_secrets_officer_current
+#   ]
+# }
+
 # Provide connectivity from the virtual network to the key vault
 resource "azurerm_private_endpoint" "key_vault" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = "pep-key-vault-${local.project_name}"
   location            = azurerm_resource_group.networking.location
@@ -68,14 +79,14 @@ resource "azurerm_private_endpoint" "key_vault" {
 }
 
 resource "azurerm_private_dns_zone" "key_vault" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = "privatelink.vaultcore.azure.net"
   resource_group_name = azurerm_resource_group.networking.name
 }
 
 resource "azurerm_private_dns_a_record" "key_vault" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = azurerm_key_vault.main.name
   zone_name           = azurerm_private_dns_zone.key_vault[count.index].name
@@ -85,7 +96,7 @@ resource "azurerm_private_dns_a_record" "key_vault" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "key_vault" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                  = "${azurerm_virtual_network.main[count.index].name}-link-to-${replace(azurerm_private_dns_zone.key_vault[count.index].name, ".", "-")}"
   resource_group_name   = azurerm_resource_group.networking.name
