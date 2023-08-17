@@ -7,7 +7,9 @@
       "direction": "in",
       "name": "req",
       "methods": [
-        "get"
+        "get",
+        "post",
+        "delete"
       ],
       "route": "users/{user_id}/sessions/{session_id?}"
     },
