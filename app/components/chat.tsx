@@ -33,12 +33,16 @@ import { ShareButton } from './share-button';
 
 export default function Chat({
   id,
+  userId,
   initialMessages,
   children,
+  deleteAction,
 }: {
   id?: string;
+  userId: string;
   initialMessages?: Message[];
   children?: React.ReactNode;
+  deleteAction?: Function;
 }) {
   const { toast } = useToast();
   const previewToken = process.env.PREVIEW_TOKEN;
@@ -51,7 +55,7 @@ export default function Chat({
         previewToken,
       },
       onError(error) {
-        console.log('Error', error);
+        console.error('Error', error);
       },
       onResponse(response) {
         if (response.status === 401 || response.status > 400) {
@@ -70,7 +74,9 @@ export default function Chat({
         append={append}
         messages={messages}
         stop={stop}
-        // id={id}
+        deleteAction={deleteAction}
+        userId={userId}
+        id={id}
       />
     </div>
   );
@@ -84,6 +90,8 @@ const ChatWindow = ({
   stop,
   reload,
   id,
+  userId,
+  deleteAction,
 }: {
   messages: Message[] | null;
   append: Function;
@@ -92,6 +100,8 @@ const ChatWindow = ({
   stop: Function;
   reload: Function;
   id?: string;
+  userId: string;
+  deleteAction?: Function;
 }) => {
   const groups = [
     {
@@ -132,7 +142,7 @@ const ChatWindow = ({
 
   const messagesEndRef = useScrollToBottom({ messages });
 
-  console.log(messages?.length);
+  console.log(id, userId);
 
   if (messages?.length === 0 || !messages)
     return (
@@ -209,7 +219,6 @@ const ChatWindow = ({
             input={input}
             setInput={setInput}
             onSubmit={async (value: string) => {
-              console.log('Submitting');
               await append({
                 content: value,
                 role: 'user',
@@ -228,7 +237,13 @@ const ChatWindow = ({
         />
         <div>
           <ShareButton />
-          <DeleteAlert />
+          {deleteAction && id ? (
+            <DeleteAlert
+              sessionId={id}
+              userId={userId}
+              deleteAction={deleteAction}
+            />
+          ) : null}
         </div>
       </div>
       <div
@@ -342,7 +357,6 @@ const ExpandingTextarea: React.FC<ExpandingTextareaProps> = ({
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    console.log('Prevented default');
     if (!input?.trim()) {
       return;
     }

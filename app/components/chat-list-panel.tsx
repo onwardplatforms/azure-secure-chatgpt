@@ -15,15 +15,17 @@ export const ChatListPanel = ({ sessions }: { sessions: Session[] }) => {
   function createNewSession() {}
 
   // filter previews based on search by name and messages
-  const filteredPreviews = sessions.filter(
-    (preview) =>
+  const filteredPreviews = sessions?.filter((preview) => {
+    return (
       preview.title.toLowerCase().includes(search.toLowerCase()) ||
-      preview.messages.some((message) =>
-        message.content.toLowerCase().includes(search.toLowerCase())
-      )
-  );
+      preview.messages.some((message) => {
+        if (!message?.content) return false;
+        return message?.content.toLowerCase().includes(search.toLowerCase());
+      })
+    );
+  });
 
-  if (sessions.length === 0) {
+  if (!sessions || sessions.length === 0) {
     return (
       <div className="text-foreground border-r border-border p-4 w-1/4 min-w-[230px] h-full flex flex-col">
         <div className="flex justify-between items-center mb-4">
@@ -45,16 +47,13 @@ export const ChatListPanel = ({ sessions }: { sessions: Session[] }) => {
     <div className="text-foreground border-r border-border p-4 w-1/4 min-w-[230px] h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold tracking-tight">Sessions</h2>
-        <Button
-          onClick={createNewSession}
-          variant={'outline'}
-          className="rounded-md"
+        <Link
+          href={'/'}
+          className={cn(buttonVariants({ variant: 'outline' }), 'rounded-md')}
         >
           <Plus className="w-4 h-4" />
-        </Button>
+        </Link>
       </div>
-
-      {}
       <Input
         className="p-2 pl-4 rounded-md  w-full mb-4 max-h-[35px]"
         type="text"

@@ -6,6 +6,7 @@ import Chat from '@/components/chat';
 import AuthenticationPage from '@/components/login';
 import SidePanel from '@/components/side-panel';
 import { generateNanoid } from '@/lib/utils';
+import { deleteSessionById } from '@/lib/sessions';
 
 export const metadata: Metadata = {
   title: 'Playground',
@@ -15,12 +16,13 @@ export const metadata: Metadata = {
 export default function Page() {
   const isLoggedIn = true;
   // const id = generateNanoid();
+  const userId = '1';
 
   if (isLoggedIn) {
     return (
       <main className="relative flex-col h-full items-center justify-center p-8 bg-gradient-to-br dark:from-slate-950 from-gray-100  to-white  dark:to-black">
         <Header />
-        <Chat>
+        <Chat userId={userId}>
           <SidePanel />
         </Chat>
       </main>

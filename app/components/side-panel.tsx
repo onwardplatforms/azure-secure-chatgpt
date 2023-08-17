@@ -1,4 +1,4 @@
-import { getUserSessions } from '@/lib/sessions';
+import { getAllSessionsForUser } from '@/lib/sessions';
 import { ChatListPanel } from './chat-list-panel';
 
 export default async function SidePanel() {
@@ -6,5 +6,6 @@ export default async function SidePanel() {
   const userId = '1';
   // retrieve the list of sessions
   // const sessions = await getUserSessions(userId);
-  return <ChatListPanel sessions={[]} />;
+  const sessions = await getAllSessionsForUser({ userId });
+  return <ChatListPanel sessions={sessions ?? []} />;
 }

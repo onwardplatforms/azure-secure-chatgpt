@@ -1,13 +1,9 @@
 import { AI_MODELS } from '@/lib/constants';
-import {
-  Test,
-  appendMessageToSessionById,
-  createSession,
-  wowzers,
-} from '@/lib/sessions';
+import { createFirstSession } from '@/lib/sessions';
 import { OpenAIStream, StreamingTextResponse, nanoid } from 'ai';
 import { Configuration, OpenAIApi } from 'openai-edge';
 import { type Message } from 'ai/react';
+import { generateNanoid } from '@/lib/utils';
 
 export const runtime = 'edge';
 
@@ -38,14 +34,28 @@ const openai = new OpenAIApi(config);
 
 export async function POST(req: Request) {
   try {
-    console.log('Beginning');
     const json = await req.json();
     const { messages, sessionId } = json;
+
+    let usersSessionId = sessionId;
 
     const userId = '1';
 
     if (!userId) {
       return new Response('Unauthorized', { status: 401 });
+    }
+
+    if (!sessionId) {
+      usersSessionId = await createFirstSession({
+        aiModel: AI_MODELS.AZURE_GPT3_5_TURBO,
+        userId: userId,
+        message: messages[0].content,
+      });
+    }
+
+    if (sessionId) {
+      // append message to session
+      // await addMessageToSession()
     }
 
     const res = await openai.createChatCompletion({
@@ -57,11 +67,9 @@ export async function POST(req: Request) {
 
     const stream = OpenAIStream(res, {
       async onCompletion(completion) {
-        console.log("I'm done!");
         const createdAt = json.createdAt ?? Date.now(); // Session creation timestamp
         const id = json.id; // Session ID
         // const userId = await retrieveUserId(); // User ID associated with the request
-        console.log(id, 'id');
         // if (!userId) throw new Error('Unauthorized');
         const messageItem: Message = {
           id: nanoid(), // A unique ID for the message itself
@@ -73,6 +81,7 @@ export async function POST(req: Request) {
           content: json.messages[messages.length - 1].content,
           role: 'user',
         };
+
         // if (id) {
         //   console.log('id is present');
         //   await appendMessageToSessionById(id, messageItem);
@@ -95,6 +104,6 @@ export async function POST(req: Request) {
     });
     return new StreamingTextResponse(stream);
   } catch (err) {
-    console.log('Error in POST /api/chat');
+    console.error('Error in POST /api/chat');
   }
 }
