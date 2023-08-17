@@ -29,12 +29,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # Connect to the Cosmos DB client and get the container
         client = create_cosmos_db_client(cosmos_db_endpoint, cosmos_db_primary_key)
         container = connect_to_cosmos_db_container(client, database_name, container_name)
-        record = update_record_in_cosmos_db(container, data, session_id, user_id)
+        update_record_in_cosmos_db(container, data, session_id, user_id)
 
     except Exception as e:
         return func.HttpResponse(str(e), status_code=500)
 
     return func.HttpResponse(
-        json.dumps(record),
+        f"The document {session_id} was updated.",
         status_code=200
     )

@@ -55,11 +55,11 @@ def query_records_from_cosmos_db(container, query):
 
 def update_record_in_cosmos_db(container, data, doc_id, partition_key):
     try:
-        item = container.read_item(item=doc_id, partition_key=partition_key)
+        record = container.read_item(item=doc_id, partition_key=partition_key)
         for key, value in data.items():
-            item[key] = value
+            record[key] = value
 
-        container.upsert_item(item)
-
+        container.replace_item(doc_id, record)
+    
     except exceptions.CosmosHttpResponseError as e:
         print('\nThere was an error. {0}'.format(e.message))
