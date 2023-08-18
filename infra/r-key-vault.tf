@@ -21,34 +21,34 @@ resource "azurerm_key_vault" "main" {
   tags = var.tags
 }
 
-# Ensure the principal running Terraform has access to key vault secrets
-resource "azurerm_role_assignment" "key_vault_secrets_officer_current" {
-  scope                = azurerm_key_vault.main.id
-  role_definition_name = data.azurerm_role_definition.key_vault_secrets_officer.name
-  principal_id         = data.azurerm_client_config.current.object_id
-}
+# # Ensure the principal running Terraform has access to key vault secrets
+# resource "azurerm_role_assignment" "key_vault_secrets_officer_current" {
+#   scope                = azurerm_key_vault.main.id
+#   role_definition_name = data.azurerm_role_definition.key_vault_secrets_officer.name
+#   principal_id         = data.azurerm_client_config.current.object_id
+# }
 
-resource "azurerm_key_vault_secret" "openai_api_key" {
-  name         = "openai-api-key"
-  value        = azurerm_cognitive_account.main.primary_access_key
-  key_vault_id = azurerm_key_vault.main.id
+# resource "azurerm_key_vault_secret" "openai_api_key" {
+#   name         = "openai-api-key"
+#   value        = azurerm_cognitive_account.main.primary_access_key
+#   key_vault_id = azurerm_key_vault.main.id
 
-  # Ensure the role assignment is complete before trying to add the secret
-  depends_on = [
-    azurerm_role_assignment.key_vault_secrets_officer_current
-  ]
-}
+#   # Ensure the role assignment is complete before trying to add the secret
+#   depends_on = [
+#     azurerm_role_assignment.key_vault_secrets_officer_current
+#   ]
+# }
 
-resource "azurerm_key_vault_secret" "cosmos_db_key" {
-  name         = "cosmos-db-key"
-  value        = azurerm_cosmosdb_account.main.primary_key
-  key_vault_id = azurerm_key_vault.main.id
+# resource "azurerm_key_vault_secret" "cosmos_db_key" {
+#   name         = "cosmos-db-key"
+#   value        = azurerm_cosmosdb_account.main.primary_key
+#   key_vault_id = azurerm_key_vault.main.id
 
-  # Ensure the role assignment is complete before trying to add the secret
-  depends_on = [
-    azurerm_role_assignment.key_vault_secrets_officer_current
-  ]
-}
+#   # Ensure the role assignment is complete before trying to add the secret
+#   depends_on = [
+#     azurerm_role_assignment.key_vault_secrets_officer_current
+#   ]
+# }
 
 # resource "azurerm_key_vault_secret" "function_app_key" {
 #   name         = "function-app-key"
