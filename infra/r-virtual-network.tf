@@ -1,5 +1,5 @@
 resource "azurerm_network_security_group" "main" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = "nsg-${local.project_name}"
   location            = azurerm_resource_group.networking.location
@@ -7,7 +7,7 @@ resource "azurerm_network_security_group" "main" {
 }
 
 resource "azurerm_virtual_network" "main" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                = "vnet-${local.project_name}"
   location            = azurerm_resource_group.networking.location
@@ -19,7 +19,7 @@ resource "azurerm_virtual_network" "main" {
 }
 
 resource "azurerm_subnet" "private_endpoints" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                 = "snet-${local.project_name}-private-endpoints"
   resource_group_name  = azurerm_resource_group.networking.name
@@ -32,7 +32,7 @@ resource "azurerm_subnet" "private_endpoints" {
 }
 
 resource "azurerm_subnet" "app_services" {
-  count = var.deploy_to_virtual_network ? 1 : 0
+  count = var.public_network_access_enabled ? 0 : 1
 
   name                 = "snet-${local.project_name}-app-services"
   resource_group_name  = azurerm_resource_group.networking.name

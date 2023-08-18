@@ -1,0 +1,4 @@
+{
+    "properties": {"model": {"format": "OpenAI", "name": "text-ada-001", "version": "1"}},
+    "sku": {"capacity": 120, "name": "Standard"}
+}

@@ -1,5 +1,26 @@
 # Project variables
 
+# variable "tenant_id" {
+#   description = "The Azure Tenant ID"
+#   type        = string
+# }
+
+# variable "subscription_id" {
+#   description = "The Azure Subscription ID"
+#   type        = string
+# }
+
+# variable "client_id" {
+#   description = "The Azure Client ID"
+#   type        = string
+# }
+
+# variable "client_secret" {
+#   description = "The Azure Client Secret"
+#   type        = string
+#   sensitive   = true
+# }
+
 variable "name" {
   type        = string
   description = "The Name which should be used for this Resource Group. Changing this forces a new Resource Group to be created."
@@ -18,9 +39,15 @@ variable "tags" {
   default     = {}
 }
 
-variable "deploy_to_virtual_network" {
+variable "public_network_access_enabled" {
   type        = bool
-  description = "Deploy the resources to a virtual network. Defaults to true."
+  description = "Should public network access be enabled for the application. Defaults to true."
+  default     = true
+}
+
+variable "enable_serverless" {
+  type        = bool
+  description = "Enable serverless services including cosmos database and function apps.  Defaults to false."
   default     = true
 }
 
@@ -57,14 +84,8 @@ variable "cosmos_db_capabilities" {
   }
 }
 
-variable "cosmos_db_serverless_enabled" {
-  type        = bool
-  description = "Enable Serverless CosmosDB. Changing this forces a new CosmosDB to be created. Defaults to false."
-  default     = false
-}
-
 variable "cosmos_db_geo_locations" {
-  description = "List of Azure regions for Cosmos DB geo-replication. When cosmos_db_serverless_enabled is set to false, the location for this project is used."
+  description = "List of Azure regions for Cosmos DB geo-replication. When enable_serverless is set to false, the location for this project is used."
   type        = list(string)
   default     = ["eastus", "westus"]
 }
