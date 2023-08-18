@@ -36,6 +36,7 @@ terraform.rc
 # Ignore local files
 *tfbackend
 local.auth
+local.backend*
 
 
 # Function app builds
