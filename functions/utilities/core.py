@@ -20,10 +20,10 @@ def connect_to_cosmos_db_container(client, database, container, partition_key="/
     except exceptions.CosmosHttpResponseError as e:
         print('\nThere was an error. {0}'.format(e.message))
 
-def write_record_to_cosmos_db(container, body):
+def write_record_to_cosmos_db(container, data):
     try:
-        result = container.upsert_item(body=body)
-        return result
+        record = container.upsert_item(body=data)
+        return record
     except exceptions.CosmosHttpResponseError as e:
         print('\nThere was an error. {0}'.format(e.message))
 
@@ -33,12 +33,12 @@ def read_records_from_cosmos_db(container):
     
     return records
 
-def delete_record_from_cosmos_db(container, doc_id, partition_key):
-    container.delete_item(doc_id, partition_key)
+def delete_record_from_cosmos_db(container, id, partition_key):
+    container.delete_item(id, partition_key)
 
-def read_record_from_cosmos_db(container, doc_id, partition_key):
+def read_record_from_cosmos_db(container, id, partition_key):
     try:
-        return container.read_item(item=doc_id, partition_key=partition_key)
+        return container.read_item(item=id, partition_key=partition_key)
     except exceptions.CosmosHttpResponseError as e:
         print('\nThere was an error. {0}'.format(e.message))
         raise e
@@ -53,13 +53,15 @@ def query_records_from_cosmos_db(container, query):
 
     return [json.loads(record) for record in records]
 
-def update_record_in_cosmos_db(container, data, doc_id, partition_key):
+def update_record_in_cosmos_db(container, data, id, partition_key):
     try:
-        record = container.read_item(item=doc_id, partition_key=partition_key)
+        record = container.read_item(item=id, partition_key=partition_key)
         for key, value in data.items():
             record[key] = value
 
-        container.replace_item(doc_id, record)
+        record = container.replace_item(id, record)
     
     except exceptions.CosmosHttpResponseError as e:
         print('\nThere was an error. {0}'.format(e.message))
+
+    return record
