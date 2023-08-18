@@ -1,8 +1,8 @@
 # Configuration
-deploy_to_virtual_network = false
+public_network_access_enabled = true
 
 # Cosmos inputs
-cosmos_db_serverless_enabled = false
+enable_serverless = true
 
 # App service inputs
 app_service_isolation_enabled = false
