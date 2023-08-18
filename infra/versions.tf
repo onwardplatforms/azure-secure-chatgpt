@@ -1,8 +1,8 @@
 terraform {
   required_version = ">= 1.3"
-  # backend "azurerm" {
-  #   # This is set in local.backend files or through the -backend-config flag in GitHub Actions
-  # }
+  backend "azurerm" {
+    # This is set in local.backend files or through the -backend-config flag in GitHub Actions
+  }
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
