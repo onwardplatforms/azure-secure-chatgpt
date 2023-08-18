@@ -9,7 +9,7 @@
       "methods": [
         "get"
       ],
-      "route": "models"
+      "route": "openai/models"
     },
     {
       "type": "http",
