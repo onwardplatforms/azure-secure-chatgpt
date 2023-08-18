@@ -4,12 +4,12 @@ locals {
     "KEY_VAULT_URI" = azurerm_key_vault.main.vault_uri
     # "WEBSITE_RUN_FROM_PACKAGE" = azurerm_storage_blob.function_app_code.url
     # These settings are required to automatically connect app insights to the web app
-    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main.instrumentation_key
-    "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.main.connection_string
-    "APPINSIGHTS_PROFILERFEATURE_VERSION"             = "1.0.0"
-    "APPINSIGHTS_SNAPSHOTFEATURE_VERSION"             = "1.0.0"
-    "ApplicationInsightsAgent_EXTENSION_VERSION"      = "~2"
-    "DiagnosticServices_EXTENSION_VERSION"            = "~3"
+    "APPINSIGHTS_INSTRUMENTATIONKEY"             = azurerm_application_insights.main.instrumentation_key
+    "APPLICATIONINSIGHTS_CONNECTION_STRING"      = azurerm_application_insights.main.connection_string
+    "APPINSIGHTS_PROFILERFEATURE_VERSION"        = "1.0.0"
+    "APPINSIGHTS_SNAPSHOTFEATURE_VERSION"        = "1.0.0"
+    "ApplicationInsightsAgent_EXTENSION_VERSION" = "~2"
+    "DiagnosticServices_EXTENSION_VERSION"       = "~3"
   }
 }
 
@@ -31,7 +31,7 @@ resource "azurerm_linux_web_app" "main" {
   )
 
   site_config {
-    http2_enabled = true
+    http2_enabled       = true
     minimum_tls_version = 1.2
 
     application_stack {

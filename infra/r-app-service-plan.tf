@@ -7,8 +7,8 @@
  */
 
 locals {
-  is_serverless_and_public   = var.enable_serverless && var.public_network_access_enabled
-  is_serverless_and_private  = var.enable_serverless && !var.public_network_access_enabled
+  is_serverless_and_public  = var.enable_serverless && var.public_network_access_enabled
+  is_serverless_and_private = var.enable_serverless && !var.public_network_access_enabled
 
   sku_name = local.is_serverless_and_public ? "Y1" : local.is_serverless_and_private ? "EP1" : var.app_service_plan_sku
 }
