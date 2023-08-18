@@ -44,7 +44,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             resource_group_name=resource_group_name,
             account_name=account_name,
         )
-        models = [item for item in response]
+        models = [model.as_dict() for model in response]
 
         if not models:
             return func.HttpResponse("Models not found", status_code=NOT_FOUND)
