@@ -12,7 +12,7 @@ resource "azurerm_cosmosdb_account" "main" {
 
   enable_automatic_failover         = true
   local_authentication_disabled     = false
-  is_virtual_network_filter_enabled = var.public_network_access_enabled
+  is_virtual_network_filter_enabled = var.public_network_access_enabled ? false : true
 
   identity {
     type = "SystemAssigned"
