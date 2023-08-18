@@ -7,9 +7,9 @@
       "direction": "in",
       "name": "req",
       "methods": [
-        "delete"
+        "get"
       ],
-      "route": "users/{user_id}/sessions"
+      "route": "models"
     },
     {
       "type": "http",
