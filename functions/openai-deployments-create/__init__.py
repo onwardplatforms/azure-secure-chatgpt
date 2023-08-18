@@ -2,14 +2,15 @@ import logging
 import azure.functions as func
 import os
 import json
+
 from azure.mgmt.cognitiveservices import CognitiveServicesManagementClient
 from azure.identity import DefaultAzureCredential
 
 from utilities.constants import (
     OK,
-    NOT_FOUND,
     INTERNAL_SERVER_ERROR,
 )
+from utilities.core import convert_to_dict
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -20,6 +21,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         subscription_id = os.getenv("SUBSCRIPTION_ID")
         resource_group_name = os.getenv("RESOURCE_GROUP_NAME")
         account_name = os.getenv("COGNITIVE_ACCOUNT_NAME")
+        deployment_name = req.route_params.get("deployment_name")
+        deployment_data = req.get_json()
     except Exception as e:
         logging.error(f"Error reading environment variables or parameters: {str(e)}")
         return func.HttpResponse(
@@ -41,20 +44,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     try:
-        response = client.accounts.list_models(
+        response = client.deployments.begin_create_or_update(
             resource_group_name=resource_group_name,
             account_name=account_name,
-        )
-        models = [model.as_dict() for model in response]
+            deployment_name=deployment_name,
+            deployment=deployment_data,
+        ).result()
+        response = convert_to_dict(response)
+        logging.info(response)
 
-        if not models:
-            return func.HttpResponse("Models not found", status_code=NOT_FOUND)
-
-        return func.HttpResponse(json.dumps(list(models)), status_code=OK)
+        return func.HttpResponse(json.dumps(response), status_code=OK)
 
     except Exception as e:
         logging.error(
-            f"Error fetching models from the Cognitive Services account: {str(e)}"
+            f"Error fetching model deployments from the Cognitive Services account: {str(e)}"
         )
         return func.HttpResponse(
             "Internal server error", status_code=INTERNAL_SERVER_ERROR

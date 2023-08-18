@@ -5,6 +5,7 @@ import azure.cosmos.cosmos_client as cosmos_client
 from azure.cosmos.partition_key import PartitionKey
 import azure.cosmos.exceptions as exceptions
 import json
+import datetime
 
 def create_cosmos_db_client(endpoint, primary_key):
     try:
@@ -65,3 +66,19 @@ def update_record_in_cosmos_db(container, data, id, partition_key):
         print('\nThere was an error. {0}'.format(e.message))
 
     return record
+
+def convert_to_dict(obj):
+    if isinstance(obj, list):
+        return [convert_to_dict(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: convert_to_dict(value) for key, value in obj.items()}
+    elif isinstance(obj, datetime.datetime):
+        return obj.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+    elif hasattr(obj, "__dict__"):
+        return {
+            key: convert_to_dict(value)
+            for key, value in obj.__dict__.items()
+            if not key.startswith("_")
+        }
+    else:
+        return obj
