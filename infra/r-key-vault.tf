@@ -21,12 +21,12 @@ resource "azurerm_key_vault" "main" {
   tags = var.tags
 }
 
-# # Ensure the principal running Terraform has access to key vault secrets
-# resource "azurerm_role_assignment" "key_vault_secrets_officer_current" {
-#   scope                = azurerm_key_vault.main.id
-#   role_definition_name = data.azurerm_role_definition.key_vault_secrets_officer.name
-#   principal_id         = data.azurerm_client_config.current.object_id
-# }
+# Ensure the principal running Terraform has access to key vault secrets
+resource "azurerm_role_assignment" "key_vault_secrets_officer_current" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = data.azurerm_role_definition.key_vault_secrets_officer.name
+  principal_id         = data.azurerm_client_config.current.object_id
+}
 
 resource "azurerm_key_vault_secret" "openai_api_key" {
   name         = "openai-api-key"
