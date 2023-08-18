@@ -9,7 +9,7 @@
       "methods": [
         "post"
       ],
-      "route": "users/{user_id}/sessions/{session_id}/update"
+      "route": "users/{user_id}/sessions/{session_id}"
     },
     {
       "type": "http",
