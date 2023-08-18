@@ -5,3 +5,5 @@
 azure-functions
 azure-cosmos
 requests
+azure-mgmt-cognitiveservices
+azure-identity
