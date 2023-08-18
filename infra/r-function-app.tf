@@ -29,7 +29,7 @@ resource "azurerm_linux_function_app" "main" {
     SUBSCRIPTION_ID          = data.azurerm_client_config.current.subscription_id
     RESOURCE_GROUP_NAME      = azurerm_resource_group.application.name
     COGNITIVE_ACCOUNT_NAME   = azurerm_cognitive_account.main.name
-    WEBSITE_RUN_FROM_PACKAGE = azurerm_storage_blob.function_app_code.url
+    # WEBSITE_RUN_FROM_PACKAGE = azurerm_storage_blob.function_app_code.url
   }
 
   tags = merge(
@@ -59,17 +59,17 @@ resource "azurerm_role_assignment" "cognitive_services_contributor" {
   principal_id         = azurerm_linux_function_app.main.identity[0].principal_id
 }
 
-data "archive_file" "function_app_code" {
-  type        = "zip"
-  source_dir  = "${path.module}/../functions"
-  output_path = "${path.module}/function-code.zip"
-}
+# data "archive_file" "function_app_code" {
+#   type        = "zip"
+#   source_dir  = "${path.module}/../functions"
+#   output_path = "${path.module}/function-code.zip"
+# }
 
-resource "azurerm_storage_blob" "function_app_code" {
-  name                   = "function-code.zip"
-  storage_account_name   = azurerm_storage_account.main.name
-  storage_container_name = azurerm_storage_container.function_releases.name
-  type                   = "Block"
-  source                 = data.archive_file.function_app_code.output_path
-  content_md5            = data.archive_file.function_app_code.output_md5
-}
+# resource "azurerm_storage_blob" "function_app_code" {
+#   name                   = "function-code.zip"
+#   storage_account_name   = azurerm_storage_account.main.name
+#   storage_container_name = azurerm_storage_container.function_releases.name
+#   type                   = "Block"
+#   source                 = data.archive_file.function_app_code.output_path
+#   content_md5            = data.archive_file.function_app_code.output_md5
+# }

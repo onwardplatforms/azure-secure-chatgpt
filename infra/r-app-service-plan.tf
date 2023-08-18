@@ -18,7 +18,7 @@ resource "azurerm_service_plan" "main" {
   resource_group_name = azurerm_resource_group.application.name
   location            = azurerm_resource_group.application.location
   os_type             = "Linux"
-  sku_name            = local.sku_name
+  sku_name            = "P1v3" # local.sku_name
 
   tags = var.tags
 }

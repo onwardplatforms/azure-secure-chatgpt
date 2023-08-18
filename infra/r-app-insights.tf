@@ -8,7 +8,7 @@
  */
 
 resource "azurerm_application_insights" "main" {
-  name                = "appi-${local.project_name}}"
+  name                = "appi-${local.project_name}"
   location            = azurerm_resource_group.application.location
   resource_group_name = azurerm_resource_group.application.name
   application_type    = "web"
