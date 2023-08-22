@@ -1,8 +1,19 @@
 # Project variables
 variable "name" {
   type        = string
-  description = "The Name which should be used for this Resource Group. Changing this forces a new Resource Group to be created."
+  description = "The name which should be used for this project."
   default     = "private-chatgpt"
+}
+
+variable "short_name" {
+  type        = string
+  description = "The short name which should be used for this project."
+  default     = "pgpt"
+
+  validation {
+    condition     = length(var.short_name) <= 4
+    error_message = "The short_name must be less than or equal to 4 characters."
+  }
 }
 
 variable "location" {
@@ -108,4 +119,11 @@ variable "app_settings" {
   type        = map(string)
   description = "A mapping of app settings to assign to the app service."
   default     = {}
+}
+
+# Virtual Machine
+variable "deploy_virtual_machine" {
+  type        = bool
+  description = "Should a virtual machine be deployed to the resource group."
+  default     = false
 }
