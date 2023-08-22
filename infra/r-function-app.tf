@@ -6,6 +6,7 @@ resource "azurerm_linux_function_app" "main" {
   storage_account_name       = azurerm_storage_account.main.name
   storage_account_access_key = azurerm_storage_account.main.primary_access_key
   service_plan_id            = azurerm_service_plan.main.id
+  public_network_access_enabled = true # TODO: set this equal to the variable later
 
   identity {
     type = "SystemAssigned"
@@ -13,8 +14,6 @@ resource "azurerm_linux_function_app" "main" {
 
   site_config {
     always_on = true
-
-    # Application insights settings
     application_insights_connection_string = azurerm_application_insights.main.connection_string
     application_insights_key               = azurerm_application_insights.main.instrumentation_key
     application_stack {
@@ -30,6 +29,13 @@ resource "azurerm_linux_function_app" "main" {
     RESOURCE_GROUP_NAME    = azurerm_resource_group.application.name
     COGNITIVE_ACCOUNT_NAME = azurerm_cognitive_account.main.name
     # WEBSITE_RUN_FROM_PACKAGE = azurerm_storage_blob.function_app_code.url
+  }
+
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to virtual_network_subnet_id which is set with the swift connection
+      virtual_network_subnet_id,
+    ]
   }
 
   tags = merge(
@@ -73,3 +79,38 @@ resource "azurerm_role_assignment" "cognitive_services_contributor" {
 #   source                 = data.archive_file.function_app_code.output_path
 #   content_md5            = data.archive_file.function_app_code.output_md5
 # }
+
+# Provide connectivity from the virtual network to the web app
+resource "azurerm_private_endpoint" "function_app" {
+  count = var.public_network_access_enabled ? 0 : 1
+
+  name                = "pep-func-${local.project_name}"
+  location            = azurerm_resource_group.networking[0].location
+  resource_group_name = azurerm_resource_group.networking[0].name
+  subnet_id           = azurerm_subnet.private_endpoints[count.index].id
+
+  private_service_connection {
+    name                           = "psc-func-${local.project_name}"
+    private_connection_resource_id = azurerm_linux_function_app.main.id
+    subresource_names              = ["sites"]
+    is_manual_connection           = false
+  }
+}
+
+resource "azurerm_private_dns_a_record" "function_app" {
+  count = var.public_network_access_enabled ? 0 : 1
+
+  name                = azurerm_linux_function_app.main.name
+  zone_name           = azurerm_private_dns_zone.app[count.index].name
+  resource_group_name = azurerm_resource_group.networking[0].name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.function_app[count.index].private_service_connection[0].private_ip_address]
+}
+
+# Provide connectivity from the web app to the virtual network
+resource "azurerm_app_service_virtual_network_swift_connection" "function_app" {
+  count = var.public_network_access_enabled ? 0 : 1
+
+  app_service_id = azurerm_linux_function_app.main.id
+  subnet_id      = azurerm_subnet.app_services[count.index].id
+}
