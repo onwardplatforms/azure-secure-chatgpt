@@ -15,8 +15,8 @@ resource "azurerm_key_vault" "main" {
   soft_delete_retention_days  = 7
   purge_protection_enabled    = false
 
-  enable_rbac_authorization = true
-  sku_name                  = "standard"
+  enable_rbac_authorization     = true
+  sku_name                      = "standard"
   public_network_access_enabled = true # TODO: set this equal to the variable later
 
   tags = var.tags

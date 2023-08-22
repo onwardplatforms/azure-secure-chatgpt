@@ -25,7 +25,7 @@ resource "azurerm_resource_group" "application" {
 # Creates a resource group for the networking components
 resource "azurerm_resource_group" "networking" {
   count = var.public_network_access_enabled ? 0 : 1
-  
+
   name     = "rg-${local.project_name}-networking"
   location = var.location
 

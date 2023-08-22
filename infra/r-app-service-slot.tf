@@ -1,7 +1,7 @@
 resource "azurerm_linux_web_app_slot" "qa" {
-  name                 = "qa"
-  app_service_id           = azurerm_linux_web_app.main.id
-  service_plan_id            = azurerm_service_plan.main.id
+  name            = "qa"
+  app_service_id  = azurerm_linux_web_app.main.id
+  service_plan_id = azurerm_service_plan.main.id
 
   https_only = true
   # Turn off public network access if the user decides to deploy to a virtual network

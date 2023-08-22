@@ -53,7 +53,7 @@ resource "azurerm_linux_web_app" "main" {
   #   require_https = true
 
   #   login {
-      
+
   #   }
 
   #   active_directory_v2 {

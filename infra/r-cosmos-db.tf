@@ -9,7 +9,7 @@ resource "azurerm_cosmosdb_account" "main" {
   enable_automatic_failover         = true
   local_authentication_disabled     = false
   is_virtual_network_filter_enabled = var.public_network_access_enabled ? false : true
-  public_network_access_enabled = true # TODO: set this equal to the variable later
+  public_network_access_enabled     = true # TODO: set this equal to the variable later
 
   identity {
     type = "SystemAssigned"

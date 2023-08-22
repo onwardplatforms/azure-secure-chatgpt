@@ -6,7 +6,7 @@ resource "azurerm_cognitive_account" "main" {
   kind                  = "OpenAI"
   custom_subdomain_name = local.project_name
 
-  sku_name = var.cognitive_account_sku
+  sku_name                      = var.cognitive_account_sku
   public_network_access_enabled = true # TODO: set this equal to the variable later
 
   identity {
