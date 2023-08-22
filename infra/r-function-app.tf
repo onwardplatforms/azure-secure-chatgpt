@@ -47,29 +47,29 @@ resource "azurerm_linux_function_app" "main" {
   )
 }
 
-resource "azurerm_role_assignment" "cosmos_contributor" {
+resource "azurerm_role_assignment" "function_app_cosmos_contributor" {
   scope                = azurerm_cosmosdb_account.main.id
   role_definition_name = "DocumentDB Account Contributor"
   principal_id         = azurerm_linux_function_app.main.identity[0].principal_id
 }
 
-resource "azurerm_role_assignment" "storage_blob_data_contibutor" {
+resource "azurerm_role_assignment" "function_app_storage_blob_data_contibutor" {
   scope                = azurerm_storage_account.main.id
   role_definition_name = "DocumentDB Account Contributor"
   principal_id         = azurerm_linux_function_app.main.identity[0].principal_id
 }
 
-resource "azurerm_role_assignment" "cognitive_services_contributor" {
+resource "azurerm_role_assignment" "function_app_cognitive_services_contributor" {
   scope                = azurerm_cognitive_account.main.id
   role_definition_name = "Contributor"
   principal_id         = azurerm_linux_function_app.main.identity[0].principal_id
 }
 
-# resource "azurerm_role_assignment" "key_vault_secrets_officer" {
-#   scope                = azurerm_key_vault.main.id
-#   role_definition_name = data.azurerm_role_definition.key_vault_secrets_officer.name
-#   principal_id         = azurerm_linux_function_app.main.identity[0].principal_id
-# }
+resource "azurerm_role_assignment" "function_app_key_vault_secrets_officer" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = data.azurerm_role_definition.key_vault_secrets_officer.name
+  principal_id         = azurerm_linux_function_app.main.identity[0].principal_id
+}
 
 # data "archive_file" "function_app_code" {
 #   type        = "zip"

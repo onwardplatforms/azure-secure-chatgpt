@@ -5,6 +5,10 @@ resource "azurerm_linux_function_app_slot" "qa" {
   service_plan_id               = azurerm_service_plan.main.id
   public_network_access_enabled = var.public_network_access_enabled
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   site_config {
     always_on                              = true
     application_insights_connection_string = azurerm_application_insights.main.connection_string

@@ -23,6 +23,10 @@ resource "azurerm_linux_web_app" "main" {
   # Turn off public network access if the user decides to deploy to a virtual network
   public_network_access_enabled = var.public_network_access_enabled
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   app_settings = merge(
     # App settings provided by users
     var.app_settings,
@@ -38,10 +42,6 @@ resource "azurerm_linux_web_app" "main" {
     application_stack {
       node_version = "18-lts"
     }
-  }
-
-  identity {
-    type = "SystemAssigned"
   }
 
   # auth_settings_v2 {
