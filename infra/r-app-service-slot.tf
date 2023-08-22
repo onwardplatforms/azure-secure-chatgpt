@@ -65,6 +65,16 @@ resource "azurerm_private_dns_a_record" "web_app_slot_qa" {
   records             = [azurerm_private_endpoint.web_app_slot_qa[count.index].private_service_connection[0].private_ip_address]
 }
 
+resource "azurerm_private_dns_a_record" "web_app_slot_qa_scm" {
+  count = var.public_network_access_enabled ? 0 : 1
+
+  name                = "${azurerm_linux_web_app_slot.qa.name}.${azurerm_linux_web_app.main.name}"
+  zone_name           = azurerm_private_dns_zone.app_scm[count.index].name
+  resource_group_name = azurerm_resource_group.networking[0].name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.web_app[count.index].private_service_connection[0].private_ip_address]
+}
+
 # Provide connectivity from the web app to the virtual network
 resource "azurerm_app_service_slot_virtual_network_swift_connection" "web_app_slot_qa" {
   count = var.public_network_access_enabled ? 0 : 1
