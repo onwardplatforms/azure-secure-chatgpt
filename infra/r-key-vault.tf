@@ -17,6 +17,7 @@ resource "azurerm_key_vault" "main" {
 
   enable_rbac_authorization = true
   sku_name                  = "standard"
+  public_network_access_enabled = true # TODO: set this equal to the variable later
 
   tags = var.tags
 }
@@ -55,8 +56,8 @@ resource "azurerm_private_endpoint" "key_vault" {
   count = var.public_network_access_enabled ? 0 : 1
 
   name                = "pep-key-vault-${local.project_name}"
-  location            = azurerm_resource_group.networking.location
-  resource_group_name = azurerm_resource_group.networking.name
+  location            = azurerm_resource_group.networking[0].location
+  resource_group_name = azurerm_resource_group.networking[0].name
   subnet_id           = azurerm_subnet.private_endpoints[0].id
 
   private_service_connection {
@@ -67,28 +68,13 @@ resource "azurerm_private_endpoint" "key_vault" {
   }
 }
 
-resource "azurerm_private_dns_zone" "key_vault" {
-  count = var.public_network_access_enabled ? 0 : 1
-
-  name                = "privatelink.vaultcore.azure.net"
-  resource_group_name = azurerm_resource_group.networking.name
-}
-
 resource "azurerm_private_dns_a_record" "key_vault" {
   count = var.public_network_access_enabled ? 0 : 1
 
   name                = azurerm_key_vault.main.name
   zone_name           = azurerm_private_dns_zone.key_vault[count.index].name
-  resource_group_name = azurerm_resource_group.networking.name
+  resource_group_name = azurerm_resource_group.networking[0].name
   ttl                 = 300
   records             = [azurerm_private_endpoint.key_vault[count.index].private_service_connection[0].private_ip_address]
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "key_vault" {
-  count = var.public_network_access_enabled ? 0 : 1
-
-  name                  = "${azurerm_virtual_network.main[count.index].name}-link-to-${replace(azurerm_private_dns_zone.key_vault[count.index].name, ".", "-")}"
-  resource_group_name   = azurerm_resource_group.networking.name
-  private_dns_zone_name = azurerm_private_dns_zone.key_vault[count.index].name
-  virtual_network_id    = azurerm_virtual_network.main[count.index].id
-}
