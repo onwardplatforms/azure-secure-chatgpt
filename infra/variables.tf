@@ -23,12 +23,6 @@ variable "public_network_access_enabled" {
   default     = true
 }
 
-variable "enable_serverless" {
-  type        = bool
-  description = "Enable serverless services including cosmos database and function apps.  Defaults to false."
-  default     = true
-}
-
 # Cosmos Database Variables
 
 variable "cosmos_db_capabilities" {
@@ -63,9 +57,15 @@ variable "cosmos_db_capabilities" {
 }
 
 variable "cosmos_db_geo_locations" {
-  description = "List of Azure regions for Cosmos DB geo-replication. When enable_serverless is set to false, the location for this project is used."
+  description = "List of Azure regions for Cosmos DB geo-replication."
   type        = list(string)
   default     = ["eastus", "westus"]
+}
+
+variable "cosmos_db_throughput" {
+  description = "The throughput of the Cosmos DB account."
+  type        = number
+  default     = 400
 }
 
 # Cognitive Account variables
