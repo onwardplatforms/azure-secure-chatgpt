@@ -21,7 +21,7 @@ resource "azurerm_linux_web_app" "main" {
 
   https_only = true
   # Turn off public network access if the user decides to deploy to a virtual network
-  public_network_access_enabled = true # TODO: set this equal to the variable later
+  public_network_access_enabled = var.public_network_access_enabled
 
   app_settings = merge(
     # App settings provided by users

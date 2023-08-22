@@ -6,7 +6,7 @@ resource "azurerm_linux_function_app" "main" {
   storage_account_name          = azurerm_storage_account.main.name
   storage_account_access_key    = azurerm_storage_account.main.primary_access_key
   service_plan_id               = azurerm_service_plan.main.id
-  public_network_access_enabled = true # TODO: set this equal to the variable later
+  public_network_access_enabled = var.public_network_access_enabled
 
   identity {
     type = "SystemAssigned"
@@ -64,6 +64,12 @@ resource "azurerm_role_assignment" "cognitive_services_contributor" {
   role_definition_name = "Contributor"
   principal_id         = azurerm_linux_function_app.main.identity[0].principal_id
 }
+
+# resource "azurerm_role_assignment" "key_vault_secrets_officer" {
+#   scope                = azurerm_key_vault.main.id
+#   role_definition_name = data.azurerm_role_definition.key_vault_secrets_officer.name
+#   principal_id         = azurerm_linux_function_app.main.identity[0].principal_id
+# }
 
 # data "archive_file" "function_app_code" {
 #   type        = "zip"

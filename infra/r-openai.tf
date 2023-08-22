@@ -7,7 +7,7 @@ resource "azurerm_cognitive_account" "main" {
   custom_subdomain_name = local.project_name
 
   sku_name                      = var.cognitive_account_sku
-  public_network_access_enabled = true # TODO: set this equal to the variable later
+  public_network_access_enabled = var.public_network_access_enabled
 
   identity {
     type = "SystemAssigned"

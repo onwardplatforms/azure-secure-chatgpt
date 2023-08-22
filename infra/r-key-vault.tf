@@ -17,7 +17,7 @@ resource "azurerm_key_vault" "main" {
 
   enable_rbac_authorization     = true
   sku_name                      = "standard"
-  public_network_access_enabled = true # TODO: set this equal to the variable later
+  public_network_access_enabled = var.public_network_access_enabled
 
   tags = var.tags
 }

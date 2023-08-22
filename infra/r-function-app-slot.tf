@@ -3,7 +3,7 @@ resource "azurerm_linux_function_app_slot" "qa" {
   function_app_id               = azurerm_linux_function_app.main.id
   storage_account_name          = azurerm_storage_account.main.name
   service_plan_id               = azurerm_service_plan.main.id
-  public_network_access_enabled = true # TODO: set this equal to the variable later
+  public_network_access_enabled = var.public_network_access_enabled
 
   site_config {
     always_on                              = true

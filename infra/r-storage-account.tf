@@ -5,7 +5,7 @@ resource "azurerm_storage_account" "main" {
   account_tier                  = "Standard"
   account_replication_type      = "LRS"
   enable_https_traffic_only     = true
-  public_network_access_enabled = true # TODO: set this equal to the variable later
+  public_network_access_enabled = var.public_network_access_enabled
 
   tags = var.tags
 }
