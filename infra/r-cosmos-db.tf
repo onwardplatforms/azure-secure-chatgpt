@@ -1,7 +1,3 @@
-locals {
-  geo_locations = var.enable_serverless ? [var.location] : var.cosmos_db_geo_locations
-}
-
 # Creates a cosmos database account
 resource "azurerm_cosmosdb_account" "main" {
   name                = "cosmos-${local.project_name}"
@@ -13,6 +9,7 @@ resource "azurerm_cosmosdb_account" "main" {
   enable_automatic_failover         = true
   local_authentication_disabled     = false
   is_virtual_network_filter_enabled = var.public_network_access_enabled ? false : true
+  public_network_access_enabled = true # TODO: set this equal to the variable later
 
   identity {
     type = "SystemAssigned"
@@ -20,7 +17,7 @@ resource "azurerm_cosmosdb_account" "main" {
 
   dynamic "capabilities" {
     # Ensure serverless is enabled if desired
-    for_each = var.enable_serverless && var.public_network_access_enabled == false ? distinct(concat(var.cosmos_db_capabilities, ["EnableServerless"])) : var.cosmos_db_capabilities
+    for_each = var.cosmos_db_capabilities
     content {
       name = capabilities.value
     }
@@ -41,7 +38,7 @@ resource "azurerm_cosmosdb_account" "main" {
 
   dynamic "geo_location" {
     # Geo-locations are only valid if serverless is disabled
-    for_each = [for location in local.geo_locations : {
+    for_each = [for location in var.cosmos_db_geo_locations : {
       location          = location
       failover_priority = index(var.cosmos_db_geo_locations, location)
     }]
@@ -58,7 +55,7 @@ resource "azurerm_cosmosdb_sql_database" "main" {
   name                = "cosmos-sql-${local.project_name}"
   resource_group_name = azurerm_cosmosdb_account.main.resource_group_name
   account_name        = azurerm_cosmosdb_account.main.name
-  throughput          = var.enable_serverless == true ? null : 400
+  throughput          = var.cosmos_db_throughput
 }
 
 resource "azurerm_cosmosdb_sql_container" "users" {
@@ -68,7 +65,7 @@ resource "azurerm_cosmosdb_sql_container" "users" {
   database_name         = azurerm_cosmosdb_sql_database.main.name
   partition_key_path    = "/id"
   partition_key_version = 1
-  throughput            = 400
+  throughput            = var.cosmos_db_throughput
 
   indexing_policy {
     indexing_mode = "consistent"
@@ -94,7 +91,7 @@ resource "azurerm_cosmosdb_sql_container" "sessions" {
   database_name         = azurerm_cosmosdb_sql_database.main.name
   partition_key_path    = "/userId"
   partition_key_version = 1
-  throughput            = 400
+  throughput            = var.cosmos_db_throughput
 
   indexing_policy {
     indexing_mode = "consistent"
@@ -118,8 +115,8 @@ resource "azurerm_private_endpoint" "cosmos_db" {
   count = var.public_network_access_enabled ? 0 : 1
 
   name                = "pep-cosmosdb-${local.project_name}"
-  location            = azurerm_resource_group.networking.location
-  resource_group_name = azurerm_resource_group.networking.name
+  location            = azurerm_resource_group.networking[0].location
+  resource_group_name = azurerm_resource_group.networking[0].name
   subnet_id           = azurerm_subnet.private_endpoints[0].id
 
   private_service_connection {
@@ -130,29 +127,14 @@ resource "azurerm_private_endpoint" "cosmos_db" {
   }
 }
 
-resource "azurerm_private_dns_zone" "cosmos_db" {
-  count = var.public_network_access_enabled ? 0 : 1
-
-  name                = "privatelink.documents.azure.us"
-  resource_group_name = azurerm_resource_group.networking.name
-}
-
 resource "azurerm_private_dns_a_record" "cosmos_db" {
   count = var.public_network_access_enabled ? 0 : 1
 
   name                = azurerm_cosmosdb_account.main.name
   zone_name           = azurerm_private_dns_zone.cosmos_db[count.index].name
-  resource_group_name = azurerm_resource_group.networking.name
+  resource_group_name = azurerm_resource_group.networking[0].name
   ttl                 = 300
   records             = [azurerm_private_endpoint.cosmos_db[count.index].private_service_connection[0].private_ip_address]
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "cosmos_db" {
-  count = var.public_network_access_enabled ? 0 : 1
-
-  name                  = "${azurerm_virtual_network.main[count.index].name}-link-to-${replace(azurerm_private_dns_zone.cosmos_db[count.index].name, ".", "-")}"
-  resource_group_name   = azurerm_resource_group.networking.name
-  private_dns_zone_name = azurerm_private_dns_zone.cosmos_db[count.index].name
-  virtual_network_id    = azurerm_virtual_network.main[count.index].id
-}
 
