@@ -13,7 +13,8 @@ resource "azurerm_virtual_network" "main" {
   location            = azurerm_resource_group.networking[0].location
   resource_group_name = azurerm_resource_group.networking[0].name
   address_space       = ["10.0.0.0/16"]
-  dns_servers         = ["10.0.0.4", "10.0.0.5"]
+  # Use Azure-provided DNS servers
+  dns_servers         = []
 
   tags = var.tags
 }
@@ -46,4 +47,13 @@ resource "azurerm_subnet" "app_services" {
       actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
     }
   }
+}
+
+resource "azurerm_subnet" "admin" {
+  count = var.deploy_virtual_machine && var.public_network_access_enabled == false ? 1 : 0
+
+  name                 = "snet-${local.project_name}-admin"
+  resource_group_name  = azurerm_resource_group.networking[0].name
+  virtual_network_name = azurerm_virtual_network.main[0].name
+  address_prefixes     = ["10.0.3.0/24"]
 }
