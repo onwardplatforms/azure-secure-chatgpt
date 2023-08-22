@@ -1,5 +1,6 @@
 locals {
   project_name = "${var.name}-${random_string.main.id}"
+  project_name_short = "${var.short_name}-${random_string.main.id}"
 }
 
 data "azurerm_client_config" "current" {}
