@@ -66,6 +66,6 @@ resource "azurerm_dev_test_global_vm_shutdown_schedule" "main" {
 
 
   notification_settings {
-    enabled         = false
+    enabled = false
   }
- }
+}
