@@ -3,8 +3,8 @@ import { Header } from '@/components/header';
 import Chat from '@/components/chat';
 import AuthenticationPage from '@/components/login';
 import SidePanel from '@/components/side-panel';
-import { generateNanoid } from '@/lib/utils';
 import { deleteSessionById, getMessagesForSession } from '@/lib/sessions';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Playground',
@@ -25,7 +25,11 @@ export default async function Page({ params }: ChatPageProps) {
     userId,
   });
 
-  const { messages } = initialMessages;
+  if (!initialMessages.ok) {
+    redirect('/');
+  }
+
+  const { messages, title } = initialMessages;
 
   const isLoggedIn = true;
 
@@ -34,6 +38,7 @@ export default async function Page({ params }: ChatPageProps) {
       <main className="relative flex-col h-full items-center justify-center p-8 bg-gradient-to-br dark:from-slate-950 from-gray-100  to-white  dark:to-black">
         <Header />
         <Chat
+          title={title}
           userId={userId}
           deleteAction={deleteSessionById}
           id={params.id}

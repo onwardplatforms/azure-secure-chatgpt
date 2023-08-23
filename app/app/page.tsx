@@ -6,17 +6,19 @@ import Chat from '@/components/chat';
 import AuthenticationPage from '@/components/login';
 import SidePanel from '@/components/side-panel';
 import { generateNanoid } from '@/lib/utils';
-import { deleteSessionById } from '@/lib/sessions';
+import { deleteSessionById, getAllSessionsForUser } from '@/lib/sessions';
+import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'Playground',
   description: 'The OpenAI Playground built using the components.',
 };
 
-export default function Page() {
+export default async function Page() {
   const isLoggedIn = true;
-  // const id = generateNanoid();
   const userId = '1';
+
+  const sessions = await getAllSessionsForUser({ userId });
 
   if (isLoggedIn) {
     return (

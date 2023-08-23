@@ -8,9 +8,11 @@ import { ChatBubbleIcon } from '@radix-ui/react-icons';
 import { Session } from '@/lib/sessions';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 export const ChatListPanel = ({ sessions }: { sessions: Session[] }) => {
   const [search, setSearch] = React.useState('');
+  const activeId = useParams()?.id;
 
   function createNewSession() {}
 
@@ -63,7 +65,12 @@ export const ChatListPanel = ({ sessions }: { sessions: Session[] }) => {
 
       <div className="overflow-y-auto flex-grow space-y-2">
         {filteredPreviews.map(({ title, id }, index) => (
-          <ChatPreview key={id} id={id} title={title} isActive={false} />
+          <ChatPreview
+            key={id}
+            id={id}
+            title={title}
+            isActive={id === activeId}
+          />
         ))}
       </div>
     </div>

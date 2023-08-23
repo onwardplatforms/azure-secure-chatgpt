@@ -1,9 +1,9 @@
-import { AI_MODELS } from '@/lib/constants';
-import { createFirstSession } from '@/lib/sessions';
+import { AI_MODELS, ROLES } from '@/lib/constants';
+import { addMessageToSessionById, createFirstSession } from '@/lib/sessions';
 import { OpenAIStream, StreamingTextResponse, nanoid } from 'ai';
 import { Configuration, OpenAIApi } from 'openai-edge';
 import { type Message } from 'ai/react';
-import { generateNanoid } from '@/lib/utils';
+import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
@@ -32,78 +32,66 @@ const config = new Configuration({
 
 const openai = new OpenAIApi(config);
 
-export async function POST(req: Request) {
-  try {
-    const json = await req.json();
-    const { messages, sessionId } = json;
+export async function POST(req: NextRequest) {
+  const json = await req.json();
+  let { messages, id } = json;
 
-    let usersSessionId = sessionId;
+  let newSessionCreated = false;
 
-    const userId = '1';
+  const userId = '1';
 
-    if (!userId) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-
-    if (!sessionId) {
-      usersSessionId = await createFirstSession({
-        aiModel: AI_MODELS.AZURE_GPT3_5_TURBO,
-        userId: userId,
-        message: messages[0].content,
-      });
-    }
-
-    if (sessionId) {
-      // append message to session
-      // await addMessageToSession()
-    }
-
-    const res = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages,
-      temperature: 0.7,
-      stream: true,
-    });
-
-    const stream = OpenAIStream(res, {
-      async onCompletion(completion) {
-        const createdAt = json.createdAt ?? Date.now(); // Session creation timestamp
-        const id = json.id; // Session ID
-        // const userId = await retrieveUserId(); // User ID associated with the request
-        // if (!userId) throw new Error('Unauthorized');
-        const messageItem: Message = {
-          id: nanoid(), // A unique ID for the message itself
-          content: completion,
-          role: 'assistant',
-        };
-        const prevMessage: any = {
-          id: nanoid(), // A unique ID for the message itself
-          content: json.messages[messages.length - 1].content,
-          role: 'user',
-        };
-
-        // if (id) {
-        //   console.log('id is present');
-        //   await appendMessageToSessionById(id, messageItem);
-        // }
-        // // }
-        // console.log('No session id');
-        // } else {
-        //   // Create a new session
-        //   const seshId = await createSession(
-        //     userId,
-        //     AI_MODELS.AZURE_GPT3_5_TURBO
-        //   );
-        //   if (!seshId) throw new Error("Couldn't create session");
-        //   // find a better way to do this
-        //   await appendMessageToSessionById(seshId, messageItem);
-        //   await appendMessageToSessionById(seshId, prevMessage);
-        //   console.log('shit');
-        // }
-      },
-    });
-    return new StreamingTextResponse(stream);
-  } catch (err) {
-    console.error('Error in POST /api/chat');
+  if (!userId) {
+    return new Response('Unauthorized', { status: 401 });
   }
+
+  if (id && messages[messages.length - 1].role !== ROLES.USER) {
+    // append message to session
+    await addMessageToSessionById({
+      sessionId: id,
+      userId,
+      messages,
+      message: messages[messages.length - 1],
+      role: ROLES.USER,
+    });
+  }
+
+  if (!id) {
+    id = await createFirstSession({
+      aiModel: AI_MODELS.AZURE_GPT3_5_TURBO,
+      userId: userId,
+      message: messages[0],
+    });
+    newSessionCreated = true;
+  }
+
+  const res = await openai.createChatCompletion({
+    model: 'gpt-3.5-turbo',
+    messages,
+    temperature: 0.7,
+    stream: true,
+  });
+
+  const stream = OpenAIStream(res, {
+    async onCompletion(completion) {
+      const messageItem: Message = {
+        id: nanoid(), // A unique ID for the message itself
+        content: completion,
+        role: 'assistant',
+      };
+
+      await addMessageToSessionById({
+        sessionId: id,
+        userId,
+        messages: messages,
+        message: messageItem,
+        role: 'assistant',
+      });
+    },
+  });
+
+  return new StreamingTextResponse(stream, {
+    headers: {
+      id: newSessionCreated ? id : '',
+    },
+  });
 }

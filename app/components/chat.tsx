@@ -1,15 +1,9 @@
 'use client';
 import React from 'react';
 import { Button } from './ui/button';
-import {
-  CaretSortIcon,
-  ChatBubbleIcon,
-  ReloadIcon,
-  StopIcon,
-} from '@radix-ui/react-icons';
-import { Preview, previews } from '@/data/chat';
+import { CaretSortIcon, ReloadIcon, StopIcon } from '@radix-ui/react-icons';
 import { Input } from './ui/input';
-import { CheckIcon, Plus, SendHorizonal, ShareIcon } from 'lucide-react';
+import { CheckIcon, SendHorizonal, ShareIcon } from 'lucide-react';
 import DeleteAlert from './delete-alert';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Icons } from './ui/icons';
@@ -30,6 +24,7 @@ import { useToast } from './ui/use-toast';
 import { useEnterSubmit } from '@/hooks/use-enter-submit';
 import useScrollToBottom from '@/hooks/use-scroll-to-bottom';
 import { ShareButton } from './share-button';
+import { redirect, useRouter } from 'next/navigation';
 
 export default function Chat({
   id,
@@ -37,32 +32,42 @@ export default function Chat({
   initialMessages,
   children,
   deleteAction,
+  title,
 }: {
   id?: string;
   userId: string;
   initialMessages?: Message[];
   children?: React.ReactNode;
   deleteAction?: Function;
+  title?: string;
 }) {
+  const router = useRouter();
   const { toast } = useToast();
   const previewToken = process.env.PREVIEW_TOKEN;
-  const { messages, append, reload, stop, isLoading, input, setInput } =
-    useChat({
-      initialMessages,
+  const redirectLink = React.useRef<string | null>(null);
+  const { messages, append, reload, stop, isLoading } = useChat({
+    initialMessages,
+    id,
+    body: {
       id,
-      body: {
-        id,
-        previewToken,
-      },
-      onError(error) {
-        console.error('Error', error);
-      },
-      onResponse(response) {
-        if (response.status === 401 || response.status > 400) {
-          toast({ variant: 'destructive', description: response.statusText });
-        }
-      },
-    });
+      previewToken,
+    },
+    onError(error) {
+      console.error('Error', error);
+    },
+    onResponse(response) {
+      if (response.status === 401 || response.status > 400) {
+        toast({ variant: 'destructive', description: response.statusText });
+      }
+      const newestSessionId = response?.headers?.get('id');
+      if (newestSessionId) redirectLink.current = newestSessionId;
+    },
+    onFinish() {
+      if (redirectLink) {
+        router.replace(`/chat/${redirectLink.current}`);
+      }
+    },
+  });
 
   return (
     <div className="flex w-full h-full">
@@ -77,6 +82,7 @@ export default function Chat({
         deleteAction={deleteAction}
         userId={userId}
         id={id}
+        title={title}
       />
     </div>
   );
@@ -141,8 +147,6 @@ const ChatWindow = ({
   const [input, setInput] = React.useState('');
 
   const messagesEndRef = useScrollToBottom({ messages });
-
-  console.log(id, userId);
 
   if (messages?.length === 0 || !messages)
     return (
@@ -232,7 +236,7 @@ const ChatWindow = ({
     <div className="text-foreground flex flex-col h-full w-full">
       <div className="p-4 border-b border-border flex items-center justify-between">
         <Input
-          className="text-lg font-semibold w-fit border-none bg-transparent"
+          className="text-lg font-semibold w-fit border-none bg-transparent text-ellipsis flex-1"
           defaultValue={title}
         />
         <div>
