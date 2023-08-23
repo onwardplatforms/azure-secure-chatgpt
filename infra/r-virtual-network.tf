@@ -14,7 +14,7 @@ resource "azurerm_virtual_network" "main" {
   resource_group_name = azurerm_resource_group.networking[0].name
   address_space       = ["10.0.0.0/16"]
   # Use Azure-provided DNS servers
-  dns_servers         = []
+  dns_servers = []
 
   tags = var.tags
 }

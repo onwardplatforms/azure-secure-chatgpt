@@ -20,7 +20,7 @@ resource "azurerm_network_interface" "main" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.admin[0].id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id = azurerm_public_ip.main[0].id
+    public_ip_address_id          = azurerm_public_ip.main[0].id
   }
 
   tags = var.tags
