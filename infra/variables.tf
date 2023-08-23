@@ -127,3 +127,9 @@ variable "deploy_virtual_machine" {
   description = "Should a virtual machine be deployed to the resource group."
   default     = false
 }
+
+variable "enable_automatic_vm_shutdown" {
+  type        = bool
+  description = "Should the virtual machine be automatically shutdown at a specific time."
+  default     = true
+}

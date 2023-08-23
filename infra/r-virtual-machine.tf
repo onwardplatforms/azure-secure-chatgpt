@@ -55,10 +55,10 @@ resource "azurerm_windows_virtual_machine" "main" {
 }
 
 resource "azurerm_dev_test_global_vm_shutdown_schedule" "main" {
-  count = var.deploy_virtual_machine && var.public_network_access_enabled == false ? 1 : 0
+  count = var.deploy_virtual_machine && var.public_network_access_enabled == false && var.enable_automatic_vm_shutdown ? 1 : 0
 
   virtual_machine_id = azurerm_windows_virtual_machine.main[0].id
-  location           = azurerm_resource_group.application[0].location
+  location           = azurerm_resource_group.application.location
   enabled            = true
 
   daily_recurrence_time = "2200"

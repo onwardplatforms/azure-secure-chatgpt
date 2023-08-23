@@ -28,10 +28,6 @@ resource "azurerm_linux_web_app_slot" "qa" {
     }
   }
 
-  identity {
-    type = "SystemAssigned"
-  }
-
   lifecycle {
     ignore_changes = [
       # This is currently required due top an issue in the azurerm provider
