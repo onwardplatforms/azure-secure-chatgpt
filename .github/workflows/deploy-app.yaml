@@ -1,4 +1,4 @@
-name: Deploy Next.js App to Azure
+name: Deploy Application
 
 concurrency:
   group: deploy-${{ github.ref }}

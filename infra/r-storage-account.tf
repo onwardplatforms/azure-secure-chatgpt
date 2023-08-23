@@ -1,10 +1,11 @@
 resource "azurerm_storage_account" "main" {
-  name                      = "st${replace(local.project_name, "-", "")}"
-  resource_group_name       = azurerm_resource_group.application.name
-  location                  = azurerm_resource_group.application.location
-  account_tier              = "Standard"
-  account_replication_type  = "LRS"
-  enable_https_traffic_only = true
+  name                          = "st${replace(local.project_name, "-", "")}"
+  resource_group_name           = azurerm_resource_group.application.name
+  location                      = azurerm_resource_group.application.location
+  account_tier                  = "Standard"
+  account_replication_type      = "LRS"
+  enable_https_traffic_only     = true
+  public_network_access_enabled = var.public_network_access_enabled
 
   tags = var.tags
 }

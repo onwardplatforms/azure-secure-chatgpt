@@ -1,4 +1,4 @@
-# resource "azurerm_app_service_environment" "main" {
+# resource "azurerm_app_service_environment_v3" "main" {
 #   count = var.app_service_isolation_enabled == true ? 1 : 0
 
 #   name                         = "ase-${local.project_name}"

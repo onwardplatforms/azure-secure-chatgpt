@@ -1,8 +1,19 @@
 # Project variables
 variable "name" {
   type        = string
-  description = "The Name which should be used for this Resource Group. Changing this forces a new Resource Group to be created."
+  description = "The name which should be used for this project."
   default     = "private-chatgpt"
+}
+
+variable "short_name" {
+  type        = string
+  description = "The short name which should be used for this project."
+  default     = "pgpt"
+
+  validation {
+    condition     = length(var.short_name) <= 4
+    error_message = "The short_name must be less than or equal to 4 characters."
+  }
 }
 
 variable "location" {
@@ -20,12 +31,6 @@ variable "tags" {
 variable "public_network_access_enabled" {
   type        = bool
   description = "Should public network access be enabled for the application. Defaults to true."
-  default     = true
-}
-
-variable "enable_serverless" {
-  type        = bool
-  description = "Enable serverless services including cosmos database and function apps.  Defaults to false."
   default     = true
 }
 
@@ -63,9 +68,15 @@ variable "cosmos_db_capabilities" {
 }
 
 variable "cosmos_db_geo_locations" {
-  description = "List of Azure regions for Cosmos DB geo-replication. When enable_serverless is set to false, the location for this project is used."
+  description = "List of Azure regions for Cosmos DB geo-replication."
   type        = list(string)
   default     = ["eastus", "westus"]
+}
+
+variable "cosmos_db_throughput" {
+  description = "The throughput of the Cosmos DB account."
+  type        = number
+  default     = 400
 }
 
 # Cognitive Account variables
@@ -108,4 +119,11 @@ variable "app_settings" {
   type        = map(string)
   description = "A mapping of app settings to assign to the app service."
   default     = {}
+}
+
+# Virtual Machine
+variable "deploy_virtual_machine" {
+  type        = bool
+  description = "Should a virtual machine be deployed to the resource group."
+  default     = false
 }

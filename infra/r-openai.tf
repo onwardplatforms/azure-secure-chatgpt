@@ -6,7 +6,8 @@ resource "azurerm_cognitive_account" "main" {
   kind                  = "OpenAI"
   custom_subdomain_name = local.project_name
 
-  sku_name = var.cognitive_account_sku
+  sku_name                      = var.cognitive_account_sku
+  public_network_access_enabled = var.public_network_access_enabled
 
   identity {
     type = "SystemAssigned"
@@ -20,8 +21,8 @@ resource "azurerm_private_endpoint" "openai" {
   count = var.public_network_access_enabled ? 0 : 1
 
   name                = "pep-openai-${local.project_name}"
-  location            = azurerm_resource_group.networking.location
-  resource_group_name = azurerm_resource_group.networking.name
+  location            = azurerm_resource_group.networking[0].location
+  resource_group_name = azurerm_resource_group.networking[0].name
   subnet_id           = azurerm_subnet.private_endpoints[0].id
 
   private_service_connection {
@@ -32,28 +33,12 @@ resource "azurerm_private_endpoint" "openai" {
   }
 }
 
-resource "azurerm_private_dns_zone" "openai" {
-  count = var.public_network_access_enabled ? 0 : 1
-
-  name                = "privatelink.openai.azure.com"
-  resource_group_name = azurerm_resource_group.networking.name
-}
-
 resource "azurerm_private_dns_a_record" "openai" {
   count = var.public_network_access_enabled ? 0 : 1
 
   name                = azurerm_cognitive_account.main.name
   zone_name           = azurerm_private_dns_zone.openai[count.index].name
-  resource_group_name = azurerm_resource_group.networking.name
+  resource_group_name = azurerm_resource_group.networking[0].name
   ttl                 = 300
   records             = [azurerm_private_endpoint.openai[count.index].private_service_connection[0].private_ip_address]
-}
-
-resource "azurerm_private_dns_zone_virtual_network_link" "openai" {
-  count = var.public_network_access_enabled ? 0 : 1
-
-  name                  = "${azurerm_virtual_network.main[count.index].name}-link-to-${replace(azurerm_private_dns_zone.openai[count.index].name, ".", "-")}"
-  resource_group_name   = azurerm_resource_group.networking.name
-  private_dns_zone_name = azurerm_private_dns_zone.openai[count.index].name
-  virtual_network_id    = azurerm_virtual_network.main[count.index].id
 }

@@ -23,6 +23,10 @@ resource "azurerm_linux_web_app" "main" {
   # Turn off public network access if the user decides to deploy to a virtual network
   public_network_access_enabled = var.public_network_access_enabled
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   app_settings = merge(
     # App settings provided by users
     var.app_settings,
@@ -33,16 +37,31 @@ resource "azurerm_linux_web_app" "main" {
   site_config {
     http2_enabled       = true
     minimum_tls_version = 1.2
-    app_command_line    = "node standalone/server.js"
+    # app_command_line    = "node standalone/server.js"
 
     application_stack {
       node_version = "18-lts"
     }
   }
 
-  identity {
-    type = "SystemAssigned"
-  }
+  # auth_settings_v2 {
+  #   auth_enabled = true
+  #   runtime_version = "~1"
+  #   require_authentication = true
+  #   unauthenticated_action = "RedirectToLoginPage"
+  #   default_provider = "AzureActiveDirectory"
+  #   require_https = true
+
+  #   login {
+
+  #   }
+
+  #   active_directory_v2 {
+  #     client_id = data.azurerm_client_config.current.client_id
+  #     tenant_auth_endpoint = "https://login.microsoftonline.com/v2.0/${data.azurerm_client_config.current.tenant_id}/"
+  #     client_secret_setting_name  = "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET"
+  #   }
+  # }
 
   lifecycle {
     ignore_changes = [
@@ -54,20 +73,13 @@ resource "azurerm_linux_web_app" "main" {
   tags = var.tags
 }
 
-# # Grant the App Service's managed identity the Key Vault Secrets User built-in role at the Key Vault's scope
-# resource "azurerm_role_assignment" "linux_web_app_key_vault_secrets_user" {
-#   scope                = azurerm_key_vault.main.id
-#   role_definition_name = data.azurerm_builtin_role_definition.key_vault_secrets_user.name
-#   principal_id         = azurerm_app_service.main.identity[0].principal_id
-# }
-
 # Provide connectivity from the virtual network to the web app
-resource "azurerm_private_endpoint" "app" {
+resource "azurerm_private_endpoint" "web_app" {
   count = var.public_network_access_enabled ? 0 : 1
 
   name                = "pep-app-${local.project_name}"
-  location            = azurerm_resource_group.networking.location
-  resource_group_name = azurerm_resource_group.networking.name
+  location            = azurerm_resource_group.networking[0].location
+  resource_group_name = azurerm_resource_group.networking[0].name
   subnet_id           = azurerm_subnet.private_endpoints[count.index].id
 
   private_service_connection {
@@ -78,34 +90,28 @@ resource "azurerm_private_endpoint" "app" {
   }
 }
 
-resource "azurerm_private_dns_zone" "app" {
-  count = var.public_network_access_enabled ? 0 : 1
-
-  name                = "privatelink.azurewebsites.net"
-  resource_group_name = azurerm_resource_group.networking.name
-}
-
-resource "azurerm_private_dns_a_record" "app" {
+resource "azurerm_private_dns_a_record" "web_app" {
   count = var.public_network_access_enabled ? 0 : 1
 
   name                = azurerm_linux_web_app.main.name
   zone_name           = azurerm_private_dns_zone.app[count.index].name
-  resource_group_name = azurerm_resource_group.networking.name
+  resource_group_name = azurerm_resource_group.networking[0].name
   ttl                 = 300
-  records             = [azurerm_private_endpoint.app[count.index].private_service_connection[0].private_ip_address]
+  records             = [azurerm_private_endpoint.web_app[count.index].private_service_connection[0].private_ip_address]
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "app" {
+resource "azurerm_private_dns_a_record" "web_app_scm" {
   count = var.public_network_access_enabled ? 0 : 1
 
-  name                  = "${azurerm_virtual_network.main[count.index].name}-link-to-${replace(azurerm_private_dns_zone.app[count.index].name, ".", "-")}"
-  resource_group_name   = azurerm_resource_group.networking.name
-  private_dns_zone_name = azurerm_private_dns_zone.app[count.index].name
-  virtual_network_id    = azurerm_virtual_network.main[count.index].id
+  name                = azurerm_linux_web_app.main.name
+  zone_name           = azurerm_private_dns_zone.app_scm[count.index].name
+  resource_group_name = azurerm_resource_group.networking[0].name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.web_app[count.index].private_service_connection[0].private_ip_address]
 }
 
 # Provide connectivity from the web app to the virtual network
-resource "azurerm_app_service_virtual_network_swift_connection" "app" {
+resource "azurerm_app_service_virtual_network_swift_connection" "web_app" {
   count = var.public_network_access_enabled ? 0 : 1
 
   app_service_id = azurerm_linux_web_app.main.id

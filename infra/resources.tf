@@ -1,5 +1,6 @@
 locals {
   project_name = "${var.name}-${random_string.main.id}"
+  project_name_short = "${var.short_name}-${random_string.main.id}"
 }
 
 data "azurerm_client_config" "current" {}
@@ -24,6 +25,8 @@ resource "azurerm_resource_group" "application" {
 
 # Creates a resource group for the networking components
 resource "azurerm_resource_group" "networking" {
+  count = var.public_network_access_enabled ? 0 : 1
+
   name     = "rg-${local.project_name}-networking"
   location = var.location
 
