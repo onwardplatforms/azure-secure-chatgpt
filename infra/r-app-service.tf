@@ -5,8 +5,8 @@ locals {
     "KEY_VAULT_URI" = azurerm_key_vault.main.vault_uri
     # "WEBSITE_RUN_FROM_PACKAGE" = azurerm_storage_blob.function_app_code.url
     # These settings are required to automatically connect app insights to the web app
-    "AZURE_OPENAI_API_DEPLOYMENT_NAME"           = "gpt-35-turbo-16k" # TODO: remove the need for this by just querying from the app using apis
-    "AZURE_OPENAI_API_KEY"                       = "*****" # TODO: add this back: azurerm_cognitive_account.main.primary_access_key
+    "AZURE_OPENAI_API_DEPLOYMENT_NAME"           = "gpt-35-turbo-16k"   # TODO: remove the need for this by just querying from the app using apis
+    "AZURE_OPENAI_API_KEY"                       = "*****"              # TODO: add this back: azurerm_cognitive_account.main.primary_access_key
     "AZURE_OPENAI_API_VERSION"                   = "2023-03-15-preview" # TODO: make this an app configuration in the future
     "AZURE_OPENAI_API_INSTANCE_NAME"             = local.project_name
     "FUNCTION_APP_ENDPOINT"                      = "${azurerm_linux_function_app.main.default_hostname}/api"
