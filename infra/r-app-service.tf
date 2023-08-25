@@ -20,7 +20,7 @@ locals {
     "APPINSIGHTS_SNAPSHOTFEATURE_VERSION"        = "1.0.0"
     "ApplicationInsightsAgent_EXTENSION_VERSION" = "~2"
     "DiagnosticServices_EXTENSION_VERSION"       = "~3"
-    "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET"   = azuread_application_password.app_auth.value
+    "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET"   = var.app_ad_authentication_enabled ? azuread_application_password.app_auth[0].value : ""
   }
 }
 
@@ -81,7 +81,7 @@ resource "azurerm_linux_web_app" "main" {
         allowed_audiences               = []
         allowed_groups                  = []
         allowed_identities              = []
-        client_id                       = azuread_application.app_auth.application_id
+        client_id                       = azuread_application.app_auth[0].application_id
         client_secret_setting_name      = "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET"
         jwt_allowed_client_applications = []
         jwt_allowed_groups              = []

@@ -1,12 +1,16 @@
 data "azuread_client_config" "current" {}
 
 resource "random_uuid" "enterprise_app_admin" {
+  count = var.app_ad_authentication_enabled ? 1 : 0
 }
 
 resource "random_uuid" "enterprise_app_user" {
+  count = var.app_ad_authentication_enabled ? 1 : 0
 }
 
 resource "azuread_application" "app_auth" {
+  count = var.app_ad_authentication_enabled ? 1 : 0
+
   display_name     = local.project_name
   owners           = [data.azuread_client_config.current.object_id]
   sign_in_audience = "AzureADMyOrg"
@@ -17,7 +21,7 @@ resource "azuread_application" "app_auth" {
   }
 
   app_role {
-    id                   = random_uuid.enterprise_app_admin.result
+    id                   = random_uuid.enterprise_app_admin[0].result
     allowed_member_types = ["User"]
     description          = "Admins can manage roles and perform all task actions."
     display_name         = "Admin"
@@ -26,7 +30,7 @@ resource "azuread_application" "app_auth" {
   }
 
   app_role {
-    id                   = random_uuid.enterprise_app_user.result
+    id                   = random_uuid.enterprise_app_user[0].result
     allowed_member_types = ["User"]
     description          = "Users can perform basic tasks."
     display_name         = "User"
@@ -63,16 +67,22 @@ resource "azuread_application" "app_auth" {
 }
 
 resource "azuread_service_principal" "app_auth" {
-  application_id = azuread_application.app_auth.application_id
+  count = var.app_ad_authentication_enabled ? 1 : 0
+
+  application_id = azuread_application.app_auth[0].application_id
 }
 
 resource "azuread_application_password" "app_auth" {
-  application_object_id = azuread_application.app_auth.object_id
+  count = var.app_ad_authentication_enabled ? 1 : 0
+
+  application_object_id = azuread_application.app_auth[0].object_id
 }
 
 resource "azurerm_key_vault_secret" "app_auth_client_id" {
+  count = var.app_ad_authentication_enabled ? 1 : 0
+
   name         = "app-auth-client-id"
-  value        = azuread_application.app_auth.id
+  value        = azuread_application.app_auth[0].id
   key_vault_id = azurerm_key_vault.main.id
 
   depends_on = [
@@ -81,8 +91,10 @@ resource "azurerm_key_vault_secret" "app_auth_client_id" {
 }
 
 resource "azurerm_key_vault_secret" "app_auth_client_secret" {
+  count = var.app_ad_authentication_enabled ? 1 : 0
+
   name         = "app-auth-client-secret"
-  value        = azuread_application_password.app_auth.value
+  value        = azuread_application_password.app_auth[0].value
   key_vault_id = azurerm_key_vault.main.id
 
   depends_on = [

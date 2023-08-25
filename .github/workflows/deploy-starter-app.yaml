@@ -5,11 +5,11 @@ concurrency:
   cancel-in-progress: false
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-    - 'apps/starter/**'
-    - .github/workflows/deploy-starter-app.yaml
+  # push:
+  #   branches: [ main ]
+  #   paths:
+  #   - 'apps/starter/**'
+  #   - .github/workflows/deploy-starter-app.yaml
   pull_request:
     branches: [ main ]
     paths:
