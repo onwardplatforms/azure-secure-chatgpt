@@ -81,7 +81,7 @@ resource "azurerm_linux_web_app" "main" {
         allowed_audiences               = []
         allowed_groups                  = []
         allowed_identities              = []
-        client_id                       = azuread_application.app_auth.application_id
+        client_id                       = azuread_application.app_auth[0].application_id
         client_secret_setting_name      = "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET"
         jwt_allowed_client_applications = []
         jwt_allowed_groups              = []
