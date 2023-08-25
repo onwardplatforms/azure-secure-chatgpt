@@ -40,7 +40,7 @@ resource "azurerm_linux_web_app" "main" {
 
   https_only = true
   # Turn off public network access if the user decides to deploy to a virtual network
-  public_network_access_enabled = var.public_network_access_enabled
+  public_network_access_enabled = var.app_public_network_access_enabled ? true : var.public_network_access_enabled
 
   identity {
     type = "SystemAssigned"
@@ -63,40 +63,43 @@ resource "azurerm_linux_web_app" "main" {
     }
   }
 
-  auth_settings_v2 {
-    auth_enabled             = true
-    default_provider         = "azureactivedirectory"
-    excluded_paths           = []
-    forward_proxy_convention = "NoProxy"
-    http_route_api_prefix    = "/.auth"
-    require_authentication   = true
-    require_https            = true
-    runtime_version          = "~1"
-    unauthenticated_action   = "RedirectToLoginPage"
+  dynamic "auth_settings_v2" {
+    for_each = var.app_ad_authentication_enabled ? ["enabled"] : []
+    content {
+      auth_enabled             = true
+      default_provider         = "azureactivedirectory"
+      excluded_paths           = []
+      forward_proxy_convention = "NoProxy"
+      http_route_api_prefix    = "/.auth"
+      require_authentication   = true
+      require_https            = true
+      runtime_version          = "~1"
+      unauthenticated_action   = "RedirectToLoginPage"
 
-    active_directory_v2 {
-      allowed_applications            = []
-      allowed_audiences               = []
-      allowed_groups                  = []
-      allowed_identities              = []
-      client_id                       = azuread_application.app_auth.application_id
-      client_secret_setting_name      = "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET"
-      jwt_allowed_client_applications = []
-      jwt_allowed_groups              = []
-      login_parameters                = {}
-      tenant_auth_endpoint            = "https://sts.windows.net/911aa7c9-864b-4b20-95c6-5c48178eda59/v2.0"
-      www_authentication_disabled     = false
-    }
+      active_directory_v2 {
+        allowed_applications            = []
+        allowed_audiences               = []
+        allowed_groups                  = []
+        allowed_identities              = []
+        client_id                       = azuread_application.app_auth.application_id
+        client_secret_setting_name      = "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET"
+        jwt_allowed_client_applications = []
+        jwt_allowed_groups              = []
+        login_parameters                = {}
+        tenant_auth_endpoint            = "https://sts.windows.net/911aa7c9-864b-4b20-95c6-5c48178eda59/v2.0"
+        www_authentication_disabled     = false
+      }
 
-    login {
-      allowed_external_redirect_urls    = []
-      cookie_expiration_convention      = "FixedTime"
-      cookie_expiration_time            = "08:00:00"
-      nonce_expiration_time             = "00:05:00"
-      preserve_url_fragments_for_logins = false
-      token_refresh_extension_time      = 72
-      token_store_enabled               = true
-      validate_nonce                    = true
+      login {
+        allowed_external_redirect_urls    = []
+        cookie_expiration_convention      = "FixedTime"
+        cookie_expiration_time            = "08:00:00"
+        nonce_expiration_time             = "00:05:00"
+        preserve_url_fragments_for_logins = false
+        token_refresh_extension_time      = 72
+        token_store_enabled               = true
+        validate_nonce                    = true
+      }
     }
   }
 

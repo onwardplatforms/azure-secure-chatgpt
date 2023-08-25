@@ -94,7 +94,7 @@ variable "cognitive_account_sku" {
 
 # App service variables
 
-variable "app_service_isolation_enabled" {
+variable "app_service_environment_enabled" {
   description = "Enable an isolated environment for the app service using ASE."
   type        = bool
   default     = false
@@ -119,6 +119,18 @@ variable "app_settings" {
   type        = map(string)
   description = "A mapping of app settings to assign to the app service."
   default     = {}
+}
+
+variable "app_ad_authentication_enabled" {
+  type        = bool
+  description = "Should Azure AD authentication be enabled for the web app."
+  default     = false
+}
+
+variable "app_public_network_access_enabled" {
+  type        = bool
+  description = "Should public network access be enabled for the web app."
+  default     = true
 }
 
 # Virtual Machine

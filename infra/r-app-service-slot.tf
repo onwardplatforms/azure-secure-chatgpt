@@ -5,7 +5,7 @@ resource "azurerm_linux_web_app_slot" "qa" {
 
   https_only = true
   # Turn off public network access if the user decides to deploy to a virtual network
-  public_network_access_enabled = var.public_network_access_enabled
+  public_network_access_enabled = var.app_public_network_access_enabled ? true : var.public_network_access_enabled
 
   identity {
     type = "SystemAssigned"
