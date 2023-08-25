@@ -76,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: app-code
-          path: ./build/app-code.zip
+          path: ${{ github.workspace }}/apps/starter/build/app-code.zip
 
   deploy:
     name: App Deploy
