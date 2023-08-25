@@ -42,3 +42,14 @@ resource "azurerm_private_dns_a_record" "openai" {
   ttl                 = 300
   records             = [azurerm_private_endpoint.openai[count.index].private_service_connection[0].private_ip_address]
 }
+
+resource "azurerm_key_vault_secret" "openai_api_key" {
+  name         = "openai-api-key"
+  value        = azurerm_cognitive_account.main.primary_access_key
+  key_vault_id = azurerm_key_vault.main.id
+
+  # Ensure the role assignment is complete before trying to add the secret
+  depends_on = [
+    azurerm_role_assignment.key_vault_secrets_officer_current
+  ]
+}
