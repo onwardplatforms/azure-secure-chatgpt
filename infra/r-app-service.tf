@@ -20,7 +20,7 @@ locals {
     "APPINSIGHTS_SNAPSHOTFEATURE_VERSION"        = "1.0.0"
     "ApplicationInsightsAgent_EXTENSION_VERSION" = "~2"
     "DiagnosticServices_EXTENSION_VERSION"       = "~3"
-    "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET"   = azuread_application_password.app_auth.value
+    "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET"   = azuread_application_password.app_auth[0].value
   }
 }
 
