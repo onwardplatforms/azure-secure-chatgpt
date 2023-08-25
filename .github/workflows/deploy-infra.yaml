@@ -104,13 +104,13 @@ jobs:
         echo "</details>" >> $GITHUB_OUTPUT
         echo "${delimiter}" >> $GITHUB_OUTPUT
 
-    # Set GitHub Secret
-    - name: Set GitHub Secrets
-      run: |
-        output_value=$(terraform output -raw web_app_name)
-        echo $output_value | gh secret set AZURE_WEB_APP_NAME
-      env:
-        GH_TOKEN: ${{ github.token }}
+    # # Set GitHub Secret
+    # - name: Set GitHub Secrets
+    #   run: |
+    #     output_value=$(terraform output -raw web_app_name)
+    #     echo $output_value | gh secret set AZURE_WEB_APP_NAME
+    #   env:
+    #     GH_TOKEN: ${{ github.token }}
             
     # Publish Terraform Plan as task summary
     - name: Publish Terraform Plan to Task Summary
