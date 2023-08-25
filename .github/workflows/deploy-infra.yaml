@@ -1,12 +1,12 @@
 name: Deploy Infrastructure
 
 on:
-  push:
-    branches:
-    - main
-    paths:
-    - infra/**
-    - .github/workflows/terraform.yaml
+  # push:
+  #   branches:
+  #   - main
+  #   paths:
+  #   - infra/**
+  #   - .github/workflows/terraform.yaml
   pull_request:
     branches:
     - main
