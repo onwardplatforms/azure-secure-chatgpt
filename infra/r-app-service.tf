@@ -56,7 +56,7 @@ resource "azurerm_linux_web_app" "main" {
   site_config {
     http2_enabled       = true
     minimum_tls_version = 1.2
-    # app_command_line    = "node standalone/server.js"
+    app_command_line    = "node server.js"
 
     application_stack {
       node_version = "18-lts"
