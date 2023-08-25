@@ -103,11 +103,6 @@ jobs:
         with:
           creds: ${{ env.AZURE_CREDENTIALS }}
 
-      - name: List Azure Web Apps
-        run: |
-          az webapp list
-
-
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
