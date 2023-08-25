@@ -29,28 +29,6 @@ resource "azurerm_role_assignment" "key_vault_secrets_officer_current" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
-resource "azurerm_key_vault_secret" "openai_api_key" {
-  name         = "openai-api-key"
-  value        = azurerm_cognitive_account.main.primary_access_key
-  key_vault_id = azurerm_key_vault.main.id
-
-  # Ensure the role assignment is complete before trying to add the secret
-  depends_on = [
-    azurerm_role_assignment.key_vault_secrets_officer_current
-  ]
-}
-
-resource "azurerm_key_vault_secret" "cosmos_db_key" {
-  name         = "cosmos-db-key"
-  value        = azurerm_cosmosdb_account.main.primary_key
-  key_vault_id = azurerm_key_vault.main.id
-
-  # Ensure the role assignment is complete before trying to add the secret
-  depends_on = [
-    azurerm_role_assignment.key_vault_secrets_officer_current
-  ]
-}
-
 # Provide connectivity from the virtual network to the key vault
 resource "azurerm_private_endpoint" "key_vault" {
   count = var.public_network_access_enabled ? 0 : 1
