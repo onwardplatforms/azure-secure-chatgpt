@@ -60,6 +60,7 @@ jobs:
           mkdir -p ./build
           cp -R ./.next/standalone/. ./build
           cp -R ./public ./build/public
+          cp -R ./.next/static ./build/.next/static
 
       - name: Package Next application for deployment
         run: |
