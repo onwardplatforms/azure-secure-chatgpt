@@ -82,9 +82,6 @@ jobs:
     name: App Deploy
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./apps/starter
 
     needs: build
     environment:
