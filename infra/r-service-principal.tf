@@ -1,11 +1,11 @@
 data "azuread_client_config" "current" {}
 
 resource "random_uuid" "enterprise_app_admin" {
-    count = var.app_ad_authentication_enabled ? 1 : 0
+  count = var.app_ad_authentication_enabled ? 1 : 0
 }
 
 resource "random_uuid" "enterprise_app_user" {
-    count = var.app_ad_authentication_enabled ? 1 : 0
+  count = var.app_ad_authentication_enabled ? 1 : 0
 }
 
 resource "azuread_application" "app_auth" {
@@ -92,7 +92,7 @@ resource "azurerm_key_vault_secret" "app_auth_client_id" {
 
 resource "azurerm_key_vault_secret" "app_auth_client_secret" {
   count = var.app_ad_authentication_enabled ? 1 : 0
-  
+
   name         = "app-auth-client-secret"
   value        = azuread_application_password.app_auth[0].value
   key_vault_id = azurerm_key_vault.main.id
