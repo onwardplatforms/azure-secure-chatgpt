@@ -19,12 +19,12 @@ resource "azurerm_linux_function_app_slot" "qa" {
   }
 
   app_settings = {
-    COSMOSDB_URL           = azurerm_cosmosdb_account.main.endpoint
-    COSMOSDB_KEY           = azurerm_cosmosdb_account.main.primary_key
-    COSMOSDB_DATABASE      = azurerm_cosmosdb_sql_database.main.name
-    SUBSCRIPTION_ID        = data.azurerm_client_config.current.subscription_id
-    RESOURCE_GROUP_NAME    = azurerm_resource_group.application.name
-    COGNITIVE_ACCOUNT_NAME = azurerm_cognitive_account.main.name
+    COSMOSDB_URL        = azurerm_cosmosdb_account.main.endpoint
+    COSMOSDB_KEY        = azurerm_cosmosdb_account.main.primary_key
+    COSMOSDB_DATABASE   = azurerm_cosmosdb_sql_database.main.name
+    SUBSCRIPTION_ID     = data.azurerm_client_config.current.subscription_id
+    RESOURCE_GROUP_NAME = azurerm_resource_group.application.name
+    # COGNITIVE_ACCOUNT_NAME = azurerm_cognitive_account.main.name
   }
 
   lifecycle {

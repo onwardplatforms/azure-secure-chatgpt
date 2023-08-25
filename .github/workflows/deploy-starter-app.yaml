@@ -1,4 +1,4 @@
-name: Deploy Application
+name: Deploy Starter Application
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -8,13 +8,13 @@ on:
   push:
     branches: [ main ]
     paths:
-    - 'app/**'
-    - .github/workflows/nextjs.yaml
+    - 'apps/starter/**'
+    - .github/workflows/deploy-starter-app.yaml
   pull_request:
     branches: [ main ]
     paths:
-    - 'app/**'
-    - .github/workflows/nextjs.yaml
+    - 'apps/starter/**'
+    - .github/workflows/deploy-starter-app.yaml
   workflow_dispatch:
 
 permissions:
@@ -25,6 +25,9 @@ jobs:
   build:
     name: App Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/starter
 
     steps:
       - name: Checkout repository
@@ -38,8 +41,8 @@ jobs:
       - name: Cache Node Modules
         uses: actions/cache@v3
         with:
-          path: ./app/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('./app/package-lock.json') }}
+          path: ./node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('./package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
@@ -48,41 +51,40 @@ jobs:
 
       - name: Install dependencies, build and test
         run: |
-          cd ./app
           npm install
           npm run build --if-present
           npm run test --if-present
-          cd ..
 
       - name: Prepare deployment files
         run: |
-          mkdir -p ./site-deploy/.next/static
-          cp -R ./app/.next/standalone ./site-deploy
-          cp -R ./app/.next/static ./site-deploy/.next/static
-          cp -R ./app/public ./site-deploy/public
-          cp -R ./app/node_modules ./site-deploy/node_modules
+          mkdir -p ./build
+          cp -R ./.next/standalone/. ./build
+          cp -R ./public ./build/public
 
       - name: Package Next application for deployment
         run: |
-          cd ./site-deploy
-          zip app-code.zip ./* .next -qr      
+          cd ./build
+          zip -r app-code.zip .   
 
       - name: List directories for diagnostics
         run: |
-          ls ./app
-          ls ./app/.next
-          ls ./site-deploy
+          ls .
+          ls ./.next
+          ls ./build
 
       - name: Upload packaged app as artifact
         uses: actions/upload-artifact@v3
         with:
           name: app-code
-          path: ./site-deploy/app-code.zip
+          path: ${{ github.workspace }}/apps/starter/build/app-code.zip
 
   deploy:
     name: App Deploy
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/starter
 
     needs: build
     environment:

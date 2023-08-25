@@ -137,4 +137,13 @@ resource "azurerm_private_dns_a_record" "cosmos_db" {
   records             = [azurerm_private_endpoint.cosmos_db[count.index].private_service_connection[0].private_ip_address]
 }
 
+resource "azurerm_key_vault_secret" "cosmos_db_key" {
+  name         = "cosmos-db-key"
+  value        = azurerm_cosmosdb_account.main.primary_key
+  key_vault_id = azurerm_key_vault.main.id
 
+  # Ensure the role assignment is complete before trying to add the secret
+  depends_on = [
+    azurerm_role_assignment.key_vault_secrets_officer_current
+  ]
+}

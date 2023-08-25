@@ -13,6 +13,7 @@ on:
     paths:
     - infra/**
     - .github/workflows/terraform.yaml
+  workflow_dispatch:
 
 # Special permissions required for OIDC authentication
 permissions:
@@ -22,7 +23,6 @@ permissions:
 
 # These environment variables are used by the terraform azure provider to setup OIDD authenticate. 
 env:
-  AZURE_CREDENTIALS: "${{ secrets.AZURE_CREDENTIALS }}"
   ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
   ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
   ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
@@ -103,7 +103,15 @@ jobs:
         echo '```' >> $GITHUB_OUTPUT
         echo "</details>" >> $GITHUB_OUTPUT
         echo "${delimiter}" >> $GITHUB_OUTPUT
-        
+
+    # # Set GitHub Secret
+    # - name: Set GitHub Secrets
+    #   run: |
+    #     output_value=$(terraform output -raw web_app_name)
+    #     echo $output_value | gh secret set AZURE_WEB_APP_NAME
+    #   env:
+    #     GH_TOKEN: ${{ github.token }}
+            
     # Publish Terraform Plan as task summary
     - name: Publish Terraform Plan to Task Summary
       env:

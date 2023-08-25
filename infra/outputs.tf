@@ -1,4 +1,7 @@
-output "openai_api_key" {
-  value     = azurerm_cognitive_account.main.primary_access_key
-  sensitive = true
+output "web_app_name" {
+  value = azurerm_linux_web_app.main.name
+}
+
+output "web_app_qa_slot_name" {
+  value = azurerm_linux_web_app_slot.qa.name
 }
